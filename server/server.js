@@ -1,9 +1,11 @@
 const express = require("express");
+const api = require("./routes/index");
+const db = require("./config/db");
+
+const PORT = 8000;
+
 const app = express();
-const test = require("./routes/index");
 
-app.use("/api", test);
+// app.use("/api", api);
 
-const port = 8000;
-
-app.listen(port, () => console.log(`port : ${port}`));
+app.listen(PORT, () => console.log(`Listening on ${PORT} port..!`));
