@@ -1,16 +1,24 @@
 import axios from "axios";
-import { useEffect } from "react";
+import React, { useState } from "react";
+import { Link, Route, Routes, BrowserRouter as Router } from "react-router-dom";
+import { LoginPage } from "@pages";
 
 function App() {
-    const callApi = async () => {
-        axios.get("/api").then((res) => console.log(res.data.test));
-    };
+	const [token, setToken] = useState();
 
-    useEffect(() => {
-        callApi();
-    }, []);
+	if (!token) {
+		return <LoginPage setToken={setToken} />;
+	}
 
-    return <div>test</div>;
+	return (
+		<Router>
+			<main>
+				<Routes>
+					<Route exact path="/" element={<LoginPage />} />
+				</Routes>
+			</main>
+		</Router>
+	);
 }
 
 export default App;
