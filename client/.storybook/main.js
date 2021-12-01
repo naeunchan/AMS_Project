@@ -16,6 +16,11 @@ module.exports = {
 			"../src/components",
 		);
 
+		config.resolve.alias["@style"] = path.resolve(
+			__dirname,
+			"../src/style",
+		);
+
 		return config;
 	},
 };
