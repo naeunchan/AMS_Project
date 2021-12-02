@@ -6,12 +6,14 @@ import BCLogo from "@style/image/BC_logo.png";
 
 const NavStyled = styled.nav`
 	display: flex;
-	position: absolute;
+	position: fixed;
+	z-index: 3000;
 	top: 0;
 	left: 0;
 	width: 100%;
 	border-bottom: 1px solid rgba(80, 80, 80, 0.2);
 	box-sizing: border-box;
+	background-color: white;
 
 	@media ${styles.media.sm} {
 		height: 60px;
