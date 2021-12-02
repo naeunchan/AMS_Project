@@ -16,13 +16,13 @@ import MenuIcon from "@material-ui/icons/Menu";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
-import Navbar from "@components/Navbar";
 
 const drawerWidth = 240;
 
 const useStyles = makeStyles((theme) => ({
 	root: {
 		display: "flex",
+		flexDirection: "column",
 	},
 	drawer: {
 		[theme.breakpoints.up("sm")]: {
@@ -34,6 +34,13 @@ const useStyles = makeStyles((theme) => ({
 		[theme.breakpoints.up("sm")]: {
 			width: `calc(100% - ${drawerWidth}px)`,
 			marginLeft: drawerWidth,
+			paddingTop: "60px",
+		},
+		[theme.breakpoints.up("md")]: {
+			paddingTop: "63px",
+		},
+		[theme.breakpoints.up("lg")]: {
+			paddingTop: "65px",
 		},
 	},
 	menuButton: {
@@ -49,6 +56,19 @@ const useStyles = makeStyles((theme) => ({
 	content: {
 		flexGrow: 1,
 		padding: theme.spacing(3),
+		[theme.breakpoints.up("sm")]: {
+			width: `calc(100% - ${drawerWidth}px)`,
+			marginLeft: drawerWidth,
+			paddingTop: "60px",
+		},
+		[theme.breakpoints.up("md")]: {
+			paddingTop: "63px",
+			paddingLeft: 0,
+		},
+		[theme.breakpoints.up("lg")]: {
+			paddingTop: "65px",
+			paddingLeft: 0,
+		},
 	},
 }));
 
@@ -97,7 +117,21 @@ const Sidebar = (props) => {
 	return (
 		<div className={classes.root}>
 			<CssBaseline />
-			<Navbar />
+			<AppBar className={classes.appBar} style={{ display: "flex" }}>
+				<Toolbar>
+					<IconButton
+						color="inherit"
+						aria-label="open drawer"
+						edge="start"
+						onClick={handleDrawerToggle}
+						className={classes.menuButton}>
+						<MenuIcon />
+					</IconButton>
+					<Typography variant="h6" noWrap>
+						Responsive drawer
+					</Typography>
+				</Toolbar>
+			</AppBar>
 			<nav className={classes.drawer} aria-label="mailbox folders">
 				<Hidden smUp implementation="css">
 					<Drawer
