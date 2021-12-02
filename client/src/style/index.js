@@ -27,6 +27,10 @@ const styles = {
     `,
 	},
 
+	color: {
+		logo: "#fe1b3d",
+	},
+
 	media: {
 		sm: "(max-width: 767px)",
 		md: "(min-width : 768px) and (max-width : 1200px)",
