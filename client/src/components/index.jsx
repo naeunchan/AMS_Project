@@ -4,3 +4,6 @@ export { default as MuiMenu } from "./MuiMenu";
 export { default as Navbar } from "./Navbar";
 export { default as Sidebar } from "./Sidebar";
 export { default as DataForm } from "./DataForm";
+export { default as DatePickers } from "./DatePickers";
+export { default as TextArea } from "./TextArea";
+export { default as FileUpload } from "./FileUpload";
