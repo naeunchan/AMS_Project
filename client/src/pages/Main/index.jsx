@@ -6,7 +6,7 @@ const Wrapper = styled.div`
 	display: flex;
 `;
 
-const MainPage = () => {
+const Main = () => {
 	return (
 		<Wrapper>
 			<Navbar />
@@ -15,4 +15,4 @@ const MainPage = () => {
 	);
 };
 
-export default MainPage;
+export default Main;
