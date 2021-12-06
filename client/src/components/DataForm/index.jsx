@@ -53,11 +53,11 @@ const ButtonContainer = styled.div`
 `;
 
 const DataForm = () => {
-    const handleConfirmClickButton = () => {
+    const handleConfirmButtonClicked = () => {
         console.log("confirm!");
     };
 
-    const handleCancelClickButton = () => {
+    const handleCancelButtonClicked = () => {
         console.log("cancel!");
     };
 
@@ -103,14 +103,14 @@ const DataForm = () => {
                     <Button
                         backgroundColor={styles.color.confirm}
                         style={{ width: "100px" }}
-                        onClick={handleConfirmClickButton}
+                        onClick={handleConfirmButtonClicked}
                     >
                         업로드
                     </Button>
                     <Button
                         backgroundColor={styles.color.cancel}
                         style={{ width: "100px" }}
-                        onClick={handleCancelClickButton}
+                        onClick={handleCancelButtonClicked}
                     >
                         취소
                     </Button>
