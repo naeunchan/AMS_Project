@@ -5,8 +5,11 @@ const session = require("express-session");
 const dotenv = require("dotenv");
 const path = require("path");
 const cors = require("cors");
-const api = require("./routes/index");
 const db = require("./config/db");
+
+// Router
+const homeRouter = require("./routes");
+const userRouter = require("./routes/user");
 
 const PORT = 8000;
 
@@ -38,22 +41,41 @@ app.use(
 	}),
 );
 
-app.use("/api/auth/login", (req, res) => {
-	res.send({
-		token: "q1w2e3r4",
-	});
+app.use("/", homeRouter);
+app.use("/user", userRouter);
+app.use((req, res, next) => {
+	res.status(404).send("Not Found");
 });
 
-app.use("/api/db", (req, res) => {
-	db.query("SELECT * FROM USER", (error, data) => {
-		if (!error) {
-			res.send({
-				user: data,
-			});
-		} else {
-			res.send(error);
-		}
-	});
+// app.use("/api/auth/login", (req, res) => {
+// 	res.send({
+// 		token: "q1w2e3r4",
+// 	});
+// });
+
+// app.use("/api/db", (req, res) => {
+// 	db.query("SELECT * FROM USER", (error, data) => {
+// 		if (!error) {
+// 			res.send({
+// 				user: data,
+// 			});
+// 		} else {
+// 			res.send(error);
+// 		}
+// 	});
+// });
+
+app.use((req, res, next) => {
+	const error = new Error(`${req.method} ${req.rul} 라우터가 없습니다.`);
+	error.status = 404;
+	next(error);
+});
+
+app.use((err, req, res, next) => {
+	res.locals.message = err.message;
+	res.locals.error = process.env.NODE_ENV !== "production" ? err : {};
+	res.status(err.status || 500);
+	res.render("error");
 });
 
 app.listen(PORT, () => console.log(`Listening on ${PORT} port..!`));

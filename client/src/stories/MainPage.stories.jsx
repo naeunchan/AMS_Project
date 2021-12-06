@@ -1,11 +1,11 @@
-import MainPage from "@pages/MainPage";
+import Main from "@pages/Main";
 import React from "react";
 
 export default {
-	title: "components/Main Page",
-	component: MainPage,
+	title: "pages/Main Page",
+	component: Main,
 };
 
 export const Default = () => {
-	return <MainPage />;
+	return <Main />;
 };
