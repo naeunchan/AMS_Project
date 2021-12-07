@@ -5,11 +5,9 @@ const session = require("express-session");
 const dotenv = require("dotenv");
 const path = require("path");
 const cors = require("cors");
-const db = require("./config/db");
 
 // Router
-const homeRouter = require("./routes");
-const userRouter = require("./routes/user");
+const api = require("./routes/api");
 
 const PORT = 8000;
 
@@ -41,8 +39,7 @@ app.use(
 	}),
 );
 
-app.use("/", homeRouter);
-app.use("/user", userRouter);
+app.use("/api", api);
 app.use((req, res, next) => {
 	res.status(404).send("Not Found");
 });
