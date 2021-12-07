@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button, Input } from "@components";
-import PropTypes from "prop-types";
-import Swal from "sweetalert2";
 import styled from "@emotion/styled";
 import BCLogo from "@style/image/BC_logo.png";
 import styles from "@style";
+import axios from "axios";
+import Swal from "sweetalert2";
 
 const image = {
 	src: BCLogo,
@@ -46,120 +47,93 @@ const ButtonContainer = styled.div`
 	flex-direction: column;
 `;
 
-const LogIn = ({ setToken }) => {
-	const [initLoading, setInitLoading] = useState(false);
-	const [email, setEmail] = useState();
-	const [password, setPassword] = useState();
+const LogIn = () => {
+	const navigate = useNavigate();
+	const [PID, setPID] = useState("");
+	const [password, setPassword] = useState("");
 
-	// const handleLogin = async (e) => {
-	//     e.preventDefault();
+	const handleChangePID = (event) => {
+		setPID(parseInt(event.target.value));
+	};
 
-	//     const token = await loginApi({
-	//         email,
-	//         password,
-	//     });
+	const handleChangePassword = (event) => {
+		setPassword(event.target.value);
+	};
 
-	//     setToken(token);
-	// };
-	// const { isLoading, errors, handleChange, handleSubmit } = useForm({
-	// 	initValues: {
-	// 		email: "",
-	// 		password: "",
-	// 	},
-	// 	onSubmit: async ({ email, password }) => {
-	// 		try {
-	// 			const response = await authApi.login({ email, password });
+	const handleClickLogInButton = () => {
+		axios
+			.post("/api/login", null, {
+				params: {
+					PID,
+					password,
+				},
+			})
+			.then((res) => {
+				if (res.data.PID === PID && res.data.password === password) {
+					sessionStorage.setItem("PID", PID);
+					navigate("/");
+				} else {
+					Swal.fire({
+						icon: "error",
+						title: res.data,
+					});
+				}
+			})
+			.catch((error) => {
+				console.error(error);
+			});
+	};
 
-	// 			sessionStorage.setItem(
-	// 				"AMS_PID",
-	// 				JSON.stringify(response.data.PID),
-	// 			);
-
-	// 			Swal.fire({
-	// 				text: "",
-	// 			});
-	// 		} catch (error) {
-	// 			Swal.fire({
-	// 				text: "이메일과 비밀번호를 확인해주세요!",
-	// 				confirmButtonColor: "#F44336",
-	// 			});
-	// 		}
-	// 	},
-	// 	validate: ({ email, password }) => {
-	// 		const errors = {};
-
-	// 		if (!validateEmailFormat(email)) {
-	// 			errors.email = "이메일 형식이 아닙니다!";
-	// 		}
-
-	// 		if (!validateEmailEmpty(email)) {
-	// 			errors.email = "이메일을 입력해주세요!";
-	// 		}
-
-	// 		if (!validatePasswordLength(password)) {
-	// 			errors.password = "비밀번호를 8자 이상 입력해주세요!";
-	// 		}
-
-	// 		if (!validatePasswordEmpty(password)) {
-	// 			errors.password = "비밀번호를 입력해주세요!";
-	// 		}
-
-	// 		return errors;
-	// 	},
-	// });
+	const handleClickSignUpButton = () => {
+		navigate("/signup");
+	};
 
 	return (
 		<FormBox>
-			<form method="post">
-				<Container>
-					<ImageContainer>
-						<img
-							src={image.src}
-							alt={image.alt}
-							width="80px"
-							height="80px"
-						/>
-					</ImageContainer>
-					<InputContainer>
-						<Input
-							type="email"
-							placeholder="e-mail"
-							style={{
-								marginBottom: "20px",
-								paddingLeft: "10px",
-							}}
-							onChange={(e) => setEmail(e.target.value)}
-						/>
-						<Input
-							type="password"
-							placeholder="password"
-							password
-							style={{ paddingLeft: "10px" }}
-							onChange={(e) => setPassword(e.target.value)}
-						/>
-					</InputContainer>
-					<ButtonContainer>
-						<Button
-							backgroundColor={styles.color.confirm}
-							style={{ width: "100%", marginBottom: "10px" }}
-							// onClick={handleLogin}
-						>
-							로그인
-						</Button>
-						<Button
-							backgroundColor={styles.color.logo}
-							color="white">
-							가입하기
-						</Button>
-					</ButtonContainer>
-				</Container>
-			</form>
+			<Container>
+				<ImageContainer>
+					<img
+						src={image.src}
+						alt={image.alt}
+						width="80px"
+						height="80px"
+					/>
+				</ImageContainer>
+				<InputContainer>
+					<Input
+						type="text"
+						placeholder="사번"
+						style={{
+							marginBottom: "20px",
+							paddingLeft: "10px",
+						}}
+						onChange={handleChangePID}
+					/>
+					<Input
+						type="password"
+						placeholder="password"
+						password
+						style={{ paddingLeft: "10px" }}
+						onChange={handleChangePassword}
+					/>
+				</InputContainer>
+				<ButtonContainer>
+					<Button
+						backgroundColor={styles.color.confirm}
+						style={{ width: "100%", marginBottom: "10px" }}
+						onClick={handleClickLogInButton}>
+						로그인
+					</Button>
+					<Button
+						backgroundColor={styles.color.logo}
+						color="white"
+						onClick={handleClickSignUpButton}>
+						가입하기
+					</Button>
+				</ButtonContainer>
+			</Container>
 		</FormBox>
 	);
 };
-
-// LogIn.propTypes = {
-// 	setToken: PropTypes.func.isRequired,
-// };
 
 export default LogIn;

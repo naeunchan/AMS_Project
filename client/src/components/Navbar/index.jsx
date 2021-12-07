@@ -7,7 +7,7 @@ import BCLogo from "@style/image/BC_logo.png";
 const NavStyled = styled.nav`
 	display: flex;
 	position: fixed;
-	z-index: 3000;
+	z-index: 1050;
 	top: 0;
 	left: 0;
 	width: 100%;

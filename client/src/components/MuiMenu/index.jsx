@@ -8,6 +8,8 @@ import MenuItem from "@material-ui/core/MenuItem";
 import MenuList from "@material-ui/core/MenuList";
 import { makeStyles } from "@material-ui/core/styles";
 import AccountCircleIcon from "@material-ui/icons/AccountCircle";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const useStyles = makeStyles((theme) => ({
 	root: {
@@ -20,6 +22,7 @@ const useStyles = makeStyles((theme) => ({
 
 const MuiMenu = () => {
 	const classes = useStyles();
+	const navigate = useNavigate();
 	const [open, setOpen] = React.useState(false);
 	const anchorRef = React.useRef(null);
 
@@ -29,8 +32,15 @@ const MuiMenu = () => {
 	};
 
 	const handleClickLogoutButton = () => {
-		console.log("Logout");
 		setOpen(false);
+		sessionStorage.removeItem("PID");
+
+		Swal.fire({
+			icon: "success",
+			title: "로그아웃 되었습니다!",
+		}).then(() => {
+			navigate("/login");
+		});
 	};
 
 	const handleToggle = () => {
