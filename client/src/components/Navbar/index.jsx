@@ -3,6 +3,7 @@ import styled from "@emotion/styled";
 import styles from "@style";
 import MuiMenu from "@components/MuiMenu";
 import BCLogo from "@style/image/BC_logo.png";
+import { useNavigate } from "react-router-dom";
 
 const NavStyled = styled.nav`
 	display: flex;
@@ -77,20 +78,16 @@ const UserDiv = styled.div`
 	right: 20px;
 `;
 
-const Navbar = ({
-	user = "",
-	children,
-	onClickEditButton,
-	onClickLogoutButton,
-	...props
-}) => {
-	const handleClick = () => {
-		console.log("Go Home");
+const Navbar = ({ user = "", children, ...props }) => {
+	const navigate = useNavigate();
+
+	const handleAMSClick = () => {
+		navigate("/");
 	};
 
 	return (
 		<NavStyled style={{ ...props.style }}>
-			<AMS onClick={handleClick}>
+			<AMS onClick={handleAMSClick}>
 				<img
 					src={image.src}
 					alt={image.alt}

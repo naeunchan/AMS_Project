@@ -13,10 +13,10 @@ const Main = () => {
 
 	useEffect(() => {
 		if (!sessionStorage.getItem("PID")) {
-			Swal.fire({
-				icon: "error",
-				title: "로그인이 필요합니다!",
-			});
+			// Swal.fire({
+			// 	icon: "error",
+			// 	title: "로그인이 필요합니다!",
+			// });
 
 			navigate("/login");
 		}

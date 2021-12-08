@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Button from "@material-ui/core/Button";
 import ClickAwayListener from "@material-ui/core/ClickAwayListener";
 import Grow from "@material-ui/core/Grow";
@@ -10,6 +10,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import AccountCircleIcon from "@material-ui/icons/AccountCircle";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import { My } from "@components";
 
 const useStyles = makeStyles((theme) => ({
 	root: {
@@ -23,12 +24,13 @@ const useStyles = makeStyles((theme) => ({
 const MuiMenu = () => {
 	const classes = useStyles();
 	const navigate = useNavigate();
-	const [open, setOpen] = React.useState(false);
+	const [open, setOpen] = useState(false);
+	const [modalVisible, setModalVisible] = useState(false);
 	const anchorRef = React.useRef(null);
 
 	const handleClickEditButton = () => {
-		console.log("Go My Page");
 		setOpen(false);
+		setModalVisible(true);
 	};
 
 	const handleClickLogoutButton = () => {
@@ -55,6 +57,10 @@ const MuiMenu = () => {
 		setOpen(false);
 	};
 
+	const handleCloseModal = () => {
+		setModalVisible(false);
+	};
+
 	function handleListKeyDown(event) {
 		if (event.key === "Tab") {
 			event.preventDefault();
@@ -63,7 +69,7 @@ const MuiMenu = () => {
 	}
 
 	const prevOpen = React.useRef(open);
-	React.useEffect(() => {
+	useEffect(() => {
 		if (prevOpen.current === true && open === false) {
 			anchorRef.current.focus();
 		}
@@ -73,6 +79,7 @@ const MuiMenu = () => {
 
 	return (
 		<div className={classes.root}>
+			{modalVisible && <My onClick={handleCloseModal} />}
 			<div>
 				<Button
 					disableRipple
