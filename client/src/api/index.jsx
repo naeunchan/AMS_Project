@@ -1,20 +1,8 @@
-import axios from "axios";
-
-const API_URL = "http://localhost:8000/api/";
-
-export const authAPI = {
-    login: (email, password) => {
-        return axios
-            .post(`${API_URL}/login`, {
-                email,
-                password,
-            })
-            .then((res) => {
-                if (res.data.token) {
-                    localStorage.setItem("user", JSON.stringify(res.data));
-                }
-
-                return res.data;
-            });
-    },
+export const TEAMCODE = {
+    1: "페이북개발팀",
+    2: "페이북회원팀",
+    3: "페이북결제팀",
+    4: "페이북채널팀",
+    5: "마이데이터개발팀",
+    6: "CB사업팀",
 };
