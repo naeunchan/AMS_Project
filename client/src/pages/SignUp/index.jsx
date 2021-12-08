@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@components";
+import { Button, Modal } from "@components";
 import styled from "@emotion/styled";
 import styles from "@style";
 import clsx from "clsx";
@@ -17,49 +17,6 @@ import Visibility from "@material-ui/icons/Visibility";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
 import axios from "axios";
 import Swal from "sweetalert2";
-
-const BackgroundDim = styled.div`
-	position: fixed;
-	top: 0;
-	left: 0;
-	width: 100vw;
-	height: 100vh;
-	background-color: rgba(0, 0, 0, 0.5);
-	z-index: 1000;
-`;
-
-const ModalContainer = styled.div`
-	display: flex;
-	flex-direction: column;
-	position: fixed;
-	align-items: center;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-	border-radius: 16px;
-	background-color: white;
-	box-shadow: "7px 14px 20px rgba(0,0,0,1.2)";
-	box-sizing: border-box;
-	min-height: 690px;
-
-	@media ${styles.media.sm} {
-		width: 300px;
-		height: 690px;
-		font-size: ${styles.fontStyle.small};
-	}
-
-	@media ${styles.media.md} {
-		width: 500px;
-		height: 690px;
-		font-size: ${styles.fontStyle.medium};
-	}
-
-	@media ${styles.media.lg} {
-		width: 600px;
-		height: 700px;
-		font-size: ${styles.fontStyle.large};
-	}
-`;
 
 const Title = styled.div`
 	display: flex;
@@ -173,8 +130,8 @@ const SignUp = () => {
 		if (PID === "") {
 			errorMsg = "사번을 입력해주세요!";
 			isError = true;
-		} else if (password === "") {
-			errorMsg = "비밀번호를 입력해주세요!";
+		} else if (password.length < 8 || password.length > 20) {
+			errorMsg = "비밀번호는 8자 이상, 20자 이하로 입력해주세요!";
 			isError = true;
 		} else if (password2 === "") {
 			errorMsg = "비밀번호 확인이 필요합니다!";
@@ -241,140 +198,136 @@ const SignUp = () => {
 		}
 	};
 
-	const handleBackButtonClick = () => {
+	const handleClickBackButton = () => {
 		navigate("/login");
 	};
 
 	return (
-		<BackgroundDim>
-			<ModalContainer>
-				<Title>회원가입</Title>
-				<div className={classes.root}>
-					<TextField
-						className={classes.margin}
-						required
-						id="standard-required"
-						label="사번"
-						defaultValue=""
-						onChange={handleChangePID}
+		<Modal>
+			<Title>회원가입</Title>
+			<div className={classes.root}>
+				<TextField
+					className={classes.margin}
+					required
+					id="standard-required"
+					label="사번"
+					defaultValue=""
+					onChange={handleChangePID}
+				/>
+				<FormControl
+					className={clsx(classes.margin, classes.textField)}
+					required>
+					<InputLabel htmlFor="standard-adornment-password">
+						비밀번호
+					</InputLabel>
+					<Input
+						id="standard-adornment-password"
+						type={values.showPassword ? "text" : "password"}
+						endAdornment={
+							<InputAdornment position="end">
+								<IconButton
+									aria-label="toggle password visibility"
+									onClick={handleClickShowPassword}
+									onMouseDown={handleMouseDownPassword}>
+									{values.showPassword ? (
+										<Visibility />
+									) : (
+										<VisibilityOff />
+									)}
+								</IconButton>
+							</InputAdornment>
+						}
+						onChange={handleChangePW}
 					/>
-					<FormControl
-						className={clsx(classes.margin, classes.textField)}
-						required>
-						<InputLabel htmlFor="standard-adornment-password">
-							비밀번호
-						</InputLabel>
-						<Input
-							id="standard-adornment-password"
-							type={values.showPassword ? "text" : "password"}
-							endAdornment={
-								<InputAdornment position="end">
-									<IconButton
-										aria-label="toggle password visibility"
-										onClick={handleClickShowPassword}
-										onMouseDown={handleMouseDownPassword}>
-										{values.showPassword ? (
-											<Visibility />
-										) : (
-											<VisibilityOff />
-										)}
-									</IconButton>
-								</InputAdornment>
-							}
-							onChange={handleChangePW}
-						/>
-					</FormControl>
-					<FormControl
-						className={clsx(classes.margin, classes.textField)}
-						required>
-						<InputLabel htmlFor="standard-adornment-password">
-							비밀번호 확인
-						</InputLabel>
-						<Input
-							id="standard-adornment-password"
-							type={values.showPassword2 ? "text" : "password"}
-							endAdornment={
-								<InputAdornment position="end">
-									<IconButton
-										aria-label="toggle password visibility"
-										onClick={handleClickShowPassword2}
-										onMouseDown={handleMouseDownPassword}>
-										{values.showPassword ? (
-											<Visibility />
-										) : (
-											<VisibilityOff />
-										)}
-									</IconButton>
-								</InputAdornment>
-							}
-							onChange={handleChangePW2}
-						/>
-					</FormControl>
-					<TextField
-						className={classes.margin}
-						required
-						id="standard-required"
-						label="이름"
-						defaultValue=""
-						onChange={handleChangeName}
+				</FormControl>
+				<FormControl
+					className={clsx(classes.margin, classes.textField)}
+					required>
+					<InputLabel htmlFor="standard-adornment-password">
+						비밀번호 확인
+					</InputLabel>
+					<Input
+						id="standard-adornment-password"
+						type={values.showPassword2 ? "text" : "password"}
+						endAdornment={
+							<InputAdornment position="end">
+								<IconButton
+									aria-label="toggle password visibility"
+									onClick={handleClickShowPassword2}
+									onMouseDown={handleMouseDownPassword}>
+									{values.showPassword ? (
+										<Visibility />
+									) : (
+										<VisibilityOff />
+									)}
+								</IconButton>
+							</InputAdornment>
+						}
+						onChange={handleChangePW2}
 					/>
-					<TextField
-						className={classes.margin}
-						required
-						id="standard-required"
-						label="이메일"
-						defaultValue=""
-						onChange={handleChangeEmail}
-					/>
-					<FormControl className={classes.margin} required>
-						<InputLabel id="demo-simple-select-label">
-							소속
-						</InputLabel>
-						<Select
-							labelId="demo-simple-select-label"
-							id="demo-simple-select"
-							value={values.team}
-							onChange={handleChangeTeam}>
-							<MenuItem value={1}>페이북개발팀</MenuItem>
-							<MenuItem value={2}>페이북회원팀</MenuItem>
-							<MenuItem value={3}>페이북결제팀</MenuItem>
-							<MenuItem value={4}>페이북채널팀</MenuItem>
-							<MenuItem value={5}>마이데이터개발팀</MenuItem>
-							<MenuItem value={6}>CB사업팀</MenuItem>
-						</Select>
-					</FormControl>
-					<TextField
-						className={classes.margin}
-						required
-						id="standard-required"
-						label="핸드폰"
-						defaultValue=""
-						onChange={handleChangePhone}
-					/>
-					<TextField
-						className={classes.margin}
-						id="standard"
-						label="닉네임"
-						defaultValue=""
-						onChange={handleChangeNickname}
-					/>
-				</div>
-				<ButtonContainer>
-					<Button
-						backgroundColor={styles.color.confirm}
-						style={{ width: "100px" }}
-						onClick={handleClickConfirmButton}>
-						회원가입
-					</Button>
-					<Button
-						backgroundColor={styles.color.cancel}
-						style={{ width: "100px" }}
-						onClick={handleBackButtonClick}>
-						돌아가기
-					</Button>
-				</ButtonContainer>
-			</ModalContainer>
-		</BackgroundDim>
+				</FormControl>
+				<TextField
+					className={classes.margin}
+					required
+					id="standard-required"
+					label="이름"
+					defaultValue=""
+					onChange={handleChangeName}
+				/>
+				<TextField
+					className={classes.margin}
+					required
+					id="standard-required"
+					label="이메일"
+					defaultValue=""
+					onChange={handleChangeEmail}
+				/>
+				<FormControl className={classes.margin} required>
+					<InputLabel id="demo-simple-select-label">소속</InputLabel>
+					<Select
+						labelId="demo-simple-select-label"
+						id="demo-simple-select"
+						value={values.team}
+						onChange={handleChangeTeam}>
+						<MenuItem value={1}>페이북개발팀</MenuItem>
+						<MenuItem value={2}>페이북회원팀</MenuItem>
+						<MenuItem value={3}>페이북결제팀</MenuItem>
+						<MenuItem value={4}>페이북채널팀</MenuItem>
+						<MenuItem value={5}>마이데이터개발팀</MenuItem>
+						<MenuItem value={6}>CB사업팀</MenuItem>
+					</Select>
+				</FormControl>
+				<TextField
+					className={classes.margin}
+					required
+					id="standard-required"
+					label="핸드폰"
+					defaultValue=""
+					onChange={handleChangePhone}
+				/>
+				<TextField
+					className={classes.margin}
+					id="standard"
+					label="닉네임"
+					defaultValue=""
+					onChange={handleChangeNickname}
+				/>
+			</div>
+			<ButtonContainer>
+				<Button
+					backgroundColor={styles.color.confirm}
+					style={{ width: "100px" }}
+					onClick={handleClickConfirmButton}>
+					회원가입
+				</Button>
+				<Button
+					backgroundColor={styles.color.cancel}
+					style={{ width: "100px" }}
+					onClick={handleClickBackButton}>
+					돌아가기
+				</Button>
+			</ButtonContainer>
+		</Modal>
 	);
 };
 

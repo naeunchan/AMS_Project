@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useState } from "react";
 import { Link, Route, Routes, BrowserRouter as Router } from "react-router-dom";
-import { LogIn, SignUp, Main } from "@pages";
+import { LogIn, SignUp, Main, My } from "@pages";
 
 function App() {
 	return (

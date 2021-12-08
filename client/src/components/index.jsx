@@ -7,3 +7,5 @@ export { default as DataForm } from "./DataForm";
 export { default as DatePickers } from "./DatePickers";
 export { default as TextArea } from "./TextArea";
 export { default as FileUpload } from "./FileUpload";
+export { default as Modal } from "./Modal";
+export { default as My } from "./My";
