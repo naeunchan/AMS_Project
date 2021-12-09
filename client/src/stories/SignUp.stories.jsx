@@ -1,8 +1,8 @@
-import SignUp from "@pages/SignUp";
+import SignUp from "@components/SignUp";
 import React from "react";
 
 export default {
-	title: "pages/SignUp",
+	title: "components/SignUp",
 	component: SignUp,
 };
 
