@@ -85,7 +85,6 @@ router.get("/my", (req, res) => {
 
 			res.send({ PID, email, password, name, team, phone, nickname });
 		} else {
-			console.log(err);
 			res.send("데이터를 가져오지 못햇습니다!");
 		}
 	});
