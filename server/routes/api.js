@@ -4,9 +4,7 @@ const router = express.Router();
 
 const checkPIDSql = "select count(*) as result from user where PID = ?";
 
-router.get("/login", (req, res) => {
-	res.send({ data: "qwer" });
-});
+// 로그인 및 회원가입
 
 router.post("/login", (req, res) => {
 	const { PID, password } = req.query;
@@ -73,6 +71,7 @@ router.post("/signup", (req, res) => {
 	});
 });
 
+// 마이 페이지
 router.get("/my", (req, res) => {
 	const PID = parseInt(req.query.PID);
 
@@ -107,6 +106,22 @@ router.post("/my", (req, res) => {
 			}
 		},
 	);
+});
+
+// About FILE
+router.get("/files", (req, res) => {
+	const PID = parseInt(req.query.PID);
+
+	const getFileInfoSql =
+		"select * from file where author_PID = ? order by FILE_ID";
+
+	db.query(getFileInfoSql, PID, (err, data) => {
+		if (!err) {
+			res.send(data[0]);
+		} else {
+			res.send("fail");
+		}
+	});
 });
 
 module.exports = router;

@@ -1,8 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import AppBar from "@material-ui/core/AppBar";
 import CssBaseline from "@material-ui/core/CssBaseline";
-import Divider from "@material-ui/core/Divider";
 import Drawer from "@material-ui/core/Drawer";
 import Hidden from "@material-ui/core/Hidden";
 import IconButton from "@material-ui/core/IconButton";
@@ -16,6 +15,8 @@ import MenuIcon from "@material-ui/icons/Menu";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
+import axios from "axios";
+import Swal from "sweetalert2";
 
 const drawerWidth = 240;
 
@@ -78,35 +79,40 @@ const Sidebar = (props) => {
 	const { window } = props;
 	const classes = useStyles();
 	const theme = useTheme();
+	const [fileList, setFileList] = useState([]);
+	const PID = parseInt(sessionStorage.getItem("PID"));
 	const [mobileOpen, setMobileOpen] = React.useState(false);
 
 	const handleDrawerToggle = () => {
 		setMobileOpen(!mobileOpen);
 	};
 
+	useEffect(() => {
+		axios
+			.get("/api/files", {
+				params: { PID },
+			})
+			.then((res) => {
+				console.log(res.data);
+				if (res.data.author_PID === PID) {
+					setFileList(res.data);
+				}
+			})
+			.catch((err) => {
+				Swal.fire({
+					icon: "error",
+					title: "에러가 발생했습니다!",
+				});
+			});
+	}, []);
+
 	const drawer = (
 		<div>
 			<div className={classes.toolbar} />
 			<List>
-				{["Inbox", "Starred", "Send email", "Drafts"].map(
-					(text, index) => (
-						<ListItem button key={text}>
-							<ListItemIcon>
-								{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-							</ListItemIcon>
-							<ListItemText primary={text} />
-						</ListItem>
-					),
-				)}
-			</List>
-			<Divider />
-			<List>
-				{["All mail", "Trash", "Spam"].map((text, index) => (
-					<ListItem button key={text}>
-						<ListItemIcon>
-							{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-						</ListItemIcon>
-						<ListItemText primary={text} />
+				{[fileList].map((file) => (
+					<ListItem button key={file}>
+						<ListItem>{file.name}</ListItem>
 					</ListItem>
 				))}
 			</List>
@@ -130,7 +136,7 @@ const Sidebar = (props) => {
 						<MenuIcon />
 					</IconButton>
 					<Typography variant="h6" noWrap>
-						Responsive drawer
+						FILE NAME
 					</Typography>
 				</Toolbar>
 			</AppBar>
