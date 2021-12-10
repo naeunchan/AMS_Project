@@ -14,6 +14,8 @@ import { makeStyles, useTheme } from "@material-ui/core/styles";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { TreeList } from "@components";
+import styled from "@emotion/styled";
+import styles from "@style";
 
 const drawerWidth = 240;
 
@@ -28,19 +30,21 @@ const useStyles = makeStyles((theme) => ({
             width: drawerWidth,
             flexShrink: 0,
             zIndex: "1000",
+            marginTop: "60px",
         },
     },
     appBar: {
+        [theme.breakpoints.down("sm")]: {
+            marginLeft: drawerWidth,
+            marginTop: "60px",
+        },
         [theme.breakpoints.up("sm")]: {
             width: `calc(100% - ${drawerWidth}px)`,
-            marginLeft: drawerWidth,
-            paddingTop: "60px",
-        },
-        [theme.breakpoints.up("md")]: {
-            paddingTop: "63px",
+            marginTop: "63px",
         },
         [theme.breakpoints.up("lg")]: {
-            paddingTop: "65px",
+            width: `calc(100% - ${drawerWidth}px)`,
+            marginTop: "65px",
         },
     },
     menuButton: {
@@ -56,17 +60,17 @@ const useStyles = makeStyles((theme) => ({
     content: {
         flexGrow: 1,
         padding: theme.spacing(3),
-        [theme.breakpoints.up("sm")]: {
+        [theme.breakpoints.down("sm")]: {
             width: `calc(100% - ${drawerWidth}px)`,
             marginLeft: drawerWidth,
-            paddingTop: "60px",
+            marginTop: "60px",
         },
         [theme.breakpoints.up("md")]: {
-            paddingTop: "63px",
+            marginTop: "63px",
             paddingLeft: 0,
         },
         [theme.breakpoints.up("lg")]: {
-            paddingTop: "65px",
+            marginTop: "65px",
             paddingLeft: 0,
         },
     },
