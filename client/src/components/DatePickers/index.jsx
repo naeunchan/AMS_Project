@@ -18,7 +18,7 @@ const DatePickers = ({ label, ...props }) => {
 	const classes = useStyles();
 
 	const changeDate = (date) => {
-		if (date <= 10) {
+		if (date < 10) {
 			return `0${date}`;
 		}
 
