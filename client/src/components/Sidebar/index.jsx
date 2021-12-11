@@ -5,8 +5,6 @@ import CssBaseline from "@material-ui/core/CssBaseline";
 import Drawer from "@material-ui/core/Drawer";
 import Hidden from "@material-ui/core/Hidden";
 import IconButton from "@material-ui/core/IconButton";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
 import MenuIcon from "@material-ui/icons/Menu";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
@@ -17,8 +15,8 @@ import TreeItem from "@material-ui/lab/TreeItem";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { AddButton, AddChildIcon } from "@components";
 import styled from "@emotion/styled";
-import styles from "@style";
 
 const drawerWidth = 240;
 
@@ -43,10 +41,6 @@ const useStyles = makeStyles((theme) => ({
         },
         [theme.breakpoints.up("sm")]: {
             width: `calc(100% - ${drawerWidth}px)`,
-            marginTop: "63px",
-        },
-        [theme.breakpoints.up("lg")]: {
-            width: `calc(100% - ${drawerWidth}px)`,
             marginTop: "65px",
         },
     },
@@ -69,10 +63,6 @@ const useStyles = makeStyles((theme) => ({
             marginTop: "60px",
         },
         [theme.breakpoints.up("sm")]: {
-            marginTop: "63px",
-            paddingLeft: 0,
-        },
-        [theme.breakpoints.up("lg")]: {
             marginTop: "65px",
             paddingLeft: 0,
         },
@@ -87,13 +77,95 @@ const useStyles = makeStyles((theme) => ({
             marginTop: "60px",
         },
         [theme.breakpoints.up("sm")]: {
-            marginTop: "70px",
-        },
-        [theme.breakpoints.up("lg")]: {
             marginTop: "75px",
         },
     },
 }));
+
+const useTreeItemStyles = makeStyles((theme) => ({
+    root: {
+        width: "100%",
+        color: theme.palette.text.secondary,
+        "&:focus > $content": {
+            color: "black",
+        },
+    },
+    content: {
+        color: theme.palette.text.secondary,
+        borderTopRightRadius: theme.spacing(2),
+        borderBottomRightRadius: theme.spacing(2),
+        paddingRight: theme.spacing(1),
+        fontWeight: theme.typography.fontWeightMedium,
+        "$expanded > &": {
+            fontWeight: theme.typography.fontWeightRegular,
+        },
+    },
+    group: {
+        marginLeft: 0,
+        "& $content": {
+            paddingLeft: theme.spacing(2),
+        },
+    },
+    label: {
+        fontWeight: "inherit",
+        color: "black",
+    },
+    labelRoot: {
+        display: "flex",
+        alignItems: "center",
+        padding: theme.spacing(0.5, 0),
+    },
+    labelText: {
+        flexGrow: 1,
+        fontSize: "1rem",
+    },
+    parent: {
+        flexGrow: 1,
+        display: "flex",
+        alignItems: "center",
+        padding: theme.spacing(0.5, 0),
+        fontWeight: "bold",
+        fontSize: "1.25rem",
+    },
+}));
+
+const StyledTreeItem = (props) => {
+    const classes = useTreeItemStyles();
+    const { labelText, color, bgColor, parent, ...other } = props;
+
+    return (
+        <TreeItem
+            label={
+                <div className={classes.labelRoot}>
+                    <Typography
+                        variant="body2"
+                        className={parent ? classes.parent : classes.labelText}
+                    >
+                        {labelText}
+                    </Typography>
+                </div>
+            }
+            style={{
+                "--tree-view-color": color,
+                "--tree-view-bg-color": bgColor,
+            }}
+            classes={{
+                root: classes.root,
+                content: classes.content,
+                expanded: classes.expanded,
+                group: classes.group,
+                label: classes.label,
+            }}
+            {...other}
+        />
+    );
+};
+
+const FlexContainer = styled.div`
+    display: flex;
+    justify-content: "center";
+    align-items: "center";
+`;
 
 const Sidebar = (props) => {
     const { window } = props;
@@ -101,7 +173,7 @@ const Sidebar = (props) => {
     const theme = useTheme();
     const [fileList, setFileList] = useState();
     const PID = parseInt(sessionStorage.getItem("PID"));
-    const [mobileOpen, setMobileOpen] = React.useState(false);
+    const [mobileOpen, setMobileOpen] = useState(false);
 
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
@@ -136,13 +208,13 @@ const Sidebar = (props) => {
                 visited.set(FILE_ID, true);
 
                 if (!fileList[file.FILE_ID].child.length) {
-                    return <TreeItem nodeId={FILE_ID} label={file.name} key={FILE_ID} />;
+                    return <StyledTreeItem nodeId={FILE_ID} labelText={file.name} key={FILE_ID} />;
                 }
 
                 return (
-                    <TreeItem nodeId={FILE_ID} label={file.name} key={FILE_ID}>
+                    <StyledTreeItem nodeId={FILE_ID} labelText={file.name} key={FILE_ID}>
                         {dfs(fileList[file.FILE_ID].child)}
-                    </TreeItem>
+                    </StyledTreeItem>
                 );
             });
 
@@ -154,11 +226,17 @@ const Sidebar = (props) => {
             visited.get(key, true);
 
             const parent = fileList[key].child.length ? (
-                <TreeItem nodeId={key} label={fileList[key].name} key={key}>
-                    {dfs(fileList[key].child)}
-                </TreeItem>
+                <FlexContainer key={key}>
+                    <StyledTreeItem parent nodeId={key} labelText={fileList[key].name}>
+                        {dfs(fileList[key].child)}
+                    </StyledTreeItem>
+                    <AddChildIcon />
+                </FlexContainer>
             ) : (
-                <TreeItem nodeId={key} label={fileList[key].name} key={key} />
+                <FlexContainer key={key}>
+                    <StyledTreeItem parent nodeId={key} labelText={fileList[key].name} key={key} />
+                    <AddChildIcon />
+                </FlexContainer>
             );
 
             files.push(parent);
@@ -180,6 +258,7 @@ const Sidebar = (props) => {
     return (
         <div className={classes.root}>
             <CssBaseline />
+            <AddButton />
             <AppBar className={classes.appBar} style={{ display: "flex" }}>
                 <Toolbar>
                     <IconButton
@@ -196,7 +275,7 @@ const Sidebar = (props) => {
                     </Typography>
                 </Toolbar>
             </AppBar>
-            <nav className={classes.drawer} aria-label="mailbox folders">
+            <nav className={classes.drawer}>
                 <Hidden smUp implementation="css">
                     <Drawer
                         container={container}

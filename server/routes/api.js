@@ -147,7 +147,6 @@ router.get("/files", (req, res) => {
                 result[k] = v;
             }
 
-            console.log(result);
             res.send(result);
         } else {
             res.send("fail");
