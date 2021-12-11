@@ -10,10 +10,13 @@ import ListItem from "@material-ui/core/ListItem";
 import MenuIcon from "@material-ui/icons/Menu";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
+import TreeView from "@material-ui/lab/TreeView";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import ChevronRightIcon from "@material-ui/icons/ChevronRight";
+import TreeItem from "@material-ui/lab/TreeItem";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { TreeList } from "@components";
 import styled from "@emotion/styled";
 import styles from "@style";
 
@@ -65,7 +68,7 @@ const useStyles = makeStyles((theme) => ({
             marginLeft: drawerWidth,
             marginTop: "60px",
         },
-        [theme.breakpoints.up("md")]: {
+        [theme.breakpoints.up("sm")]: {
             marginTop: "63px",
             paddingLeft: 0,
         },
@@ -74,13 +77,29 @@ const useStyles = makeStyles((theme) => ({
             paddingLeft: 0,
         },
     },
+    tree: {
+        height: 240,
+        flexGrow: 1,
+        maxWidth: 400,
+        marginLeft: "10px",
+
+        [theme.breakpoints.down("sm")]: {
+            marginTop: "60px",
+        },
+        [theme.breakpoints.up("sm")]: {
+            marginTop: "70px",
+        },
+        [theme.breakpoints.up("lg")]: {
+            marginTop: "75px",
+        },
+    },
 }));
 
 const Sidebar = (props) => {
     const { window } = props;
     const classes = useStyles();
     const theme = useTheme();
-    const [fileList, setFileList] = useState([]);
+    const [fileList, setFileList] = useState();
     const PID = parseInt(sessionStorage.getItem("PID"));
     const [mobileOpen, setMobileOpen] = React.useState(false);
 
@@ -94,8 +113,7 @@ const Sidebar = (props) => {
                 params: { PID },
             })
             .then((res) => {
-                console.log(res.data);
-                if (res.data.author_PID === PID) {
+                if (res.data) {
                     setFileList(res.data);
                 }
             })
@@ -107,18 +125,55 @@ const Sidebar = (props) => {
             });
     }, [PID]);
 
-    const drawer = (
-        <div>
-            <div className={classes.toolbar} />
-            <List>
-                {/* {[fileList].map((file) => (
-                    <ListItem button key={file}>
-                        <ListItem>{file.name}</ListItem>
-                    </ListItem>
-                ))} */}
-            </List>
-        </div>
-    );
+    const drawer = () => {
+        const visited = new Map();
+        const files = [];
+
+        const dfs = (child) =>
+            child.map((file) => {
+                const FILE_ID = file.FILE_ID.toString();
+
+                visited.set(FILE_ID, true);
+
+                if (!fileList[file.FILE_ID].child.length) {
+                    return <TreeItem nodeId={FILE_ID} label={file.name} key={FILE_ID} />;
+                }
+
+                return (
+                    <TreeItem nodeId={FILE_ID} label={file.name} key={FILE_ID}>
+                        {dfs(fileList[file.FILE_ID].child)}
+                    </TreeItem>
+                );
+            });
+
+        for (const key in fileList) {
+            if (visited.has(key)) {
+                continue;
+            }
+
+            visited.get(key, true);
+
+            const parent = fileList[key].child.length ? (
+                <TreeItem nodeId={key} label={fileList[key].name} key={key}>
+                    {dfs(fileList[key].child)}
+                </TreeItem>
+            ) : (
+                <TreeItem nodeId={key} label={fileList[key].name} key={key} />
+            );
+
+            files.push(parent);
+        }
+
+        return (
+            <TreeView
+                className={classes.tree}
+                defaultCollapseIcon={<ExpandMoreIcon />}
+                defaultExpandIcon={<ChevronRightIcon />}
+            >
+                {files}
+            </TreeView>
+        );
+    };
 
     const container = window !== undefined ? () => window().document.body : undefined;
 
@@ -156,7 +211,7 @@ const Sidebar = (props) => {
                             keepMounted: true,
                         }}
                     >
-                        {drawer}
+                        {drawer()}
                     </Drawer>
                 </Hidden>
                 <Hidden xsDown implementation="css">
@@ -167,7 +222,7 @@ const Sidebar = (props) => {
                         variant="permanent"
                         open
                     >
-                        {drawer}
+                        {drawer()}
                     </Drawer>
                 </Hidden>
             </nav>

@@ -105,6 +105,8 @@ router.post("/my", (req, res) => {
 });
 
 // About FILE
+const DFS = (directory) => {};
+
 router.get("/files", (req, res) => {
     const PID = parseInt(req.query.PID);
 
@@ -113,7 +115,7 @@ router.get("/files", (req, res) => {
     db.query(getFileInfoSql, PID, (err, data) => {
         if (!err) {
             const directory = new Map();
-            const result = [];
+            const result = {};
 
             data.map((info) => {
                 if (info.path === 0) {
@@ -140,8 +142,13 @@ router.get("/files", (req, res) => {
                     });
                 }
             });
-            // dfs 진행
-            res.send(directory);
+
+            for (const [k, v] of directory) {
+                result[k] = v;
+            }
+
+            console.log(result);
+            res.send(result);
         } else {
             res.send("fail");
         }

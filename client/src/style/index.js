@@ -35,8 +35,8 @@ const styles = {
     },
 
     media: {
-        sm: "(max-width: 960px)",
-        md: "(min-width : 961px) and (max-width : 1280px)",
+        sm: "(max-width: 600px)",
+        md: "(min-width : 601px) and (max-width : 1280px)",
         lg: "(min-width: 1281px)",
     },
 };
