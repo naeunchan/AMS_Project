@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Button, DatePickers, TextArea, FileUpload } from "@components";
+import { Modal, DatePickers, TextArea, FileUpload } from "@components";
 import { isMobile } from "react-device-detect";
 import styled from "@emotion/styled";
 import styles from "@style";
@@ -16,12 +16,6 @@ import MenuItem from "@material-ui/core/MenuItem";
 const FlexContainer = styled.div`
     display: flex;
     width: 100%;
-`;
-
-const ButtonContainer = styled.div`
-    display: flex;
-    width: 50%;
-    justify-content: space-around;
 `;
 
 const MobileScreen = styled.div`
@@ -123,10 +117,6 @@ const DataForm = ({ onClose, ...props }) => {
         }
     };
 
-    const handleClickConfirmButton = () => {
-        console.log("confirm!");
-    };
-
     useEffect(() => {
         window.addEventListener("resize", handleResize);
 
@@ -222,23 +212,8 @@ const DataForm = ({ onClose, ...props }) => {
                     width: "50px",
                     height: "100px",
                 }}
+                onClose={onClose}
             />
-            <ButtonContainer>
-                <Button
-                    backgroundColor={styles.color.confirm}
-                    style={{ width: "100px" }}
-                    onClick={handleClickConfirmButton}
-                >
-                    업로드
-                </Button>
-                <Button
-                    backgroundColor={styles.color.cancel}
-                    style={{ width: "100px" }}
-                    onClick={onClose}
-                >
-                    취소
-                </Button>
-            </ButtonContainer>
         </Modal>
     );
 };

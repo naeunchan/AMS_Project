@@ -1,8 +1,10 @@
 import React from "react";
+import { Button } from "@components";
 import { useDropzone } from "react-dropzone";
 import styled from "@emotion/styled";
 import styles from "@style";
 import TextField from "@material-ui/core/TextField";
+import axios from "axios";
 
 const DivStyled = styled.div`
     display: flex;
@@ -19,15 +21,46 @@ const PStyled = styled.p`
     color: ${styles.color.confirm};
 `;
 
-const FileUpload = () => {
+const ButtonContainer = styled.div`
+    display: flex;
+    width: 50%;
+    justify-content: space-around;
+`;
+
+const FileUpload = ({ onClose, ...props }) => {
     const { getRootProps, getInputProps, acceptedFiles } = useDropzone({
         noKeyboard: true,
-        accept: ".apk, image/jpeg, image/png, image/jpg",
+        accept: ".apk, .xapk",
         multiple: true,
         noDrag: true,
     });
 
-    const acceptedFileItems = acceptedFiles.map((file) => `-${file.path}\n`).join("");
+    const handleClickConfirmButton = (event) => {
+        event.preventDefault();
+
+        let formData = new FormData();
+
+        acceptedFiles.forEach((file) => {
+            formData.append("files", file);
+        });
+
+        axios
+            .post("/api/upload", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            })
+            .then((res) => {
+                console.log(res);
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+    };
+
+    const acceptedFileItems = acceptedFiles
+        .map((file, index) => `${index + 1}) ${file.path}\n`)
+        .join("");
 
     return (
         <>
@@ -42,14 +75,32 @@ const FileUpload = () => {
                     width: "100%",
                 }}
                 variant="outlined"
-                InputProps={{ readOnly: true }}
-                defaultValue={acceptedFileItems ? acceptedFileItems : "파일을 첨부하세요!"}
+                InputProps={{ readOnly: true, style: { fontSize: "0.8rem" } }}
+                InputLabelProps={{ style: { fontSize: "1rem" } }}
+                value={acceptedFiles.length ? acceptedFileItems : "파일을 첨부하세요!"}
             />
             <DivStyled {...getRootProps()}>
                 <input {...getInputProps()} />
                 <p>Click</p> <PStyled>&nbsp;HERE&nbsp;</PStyled>
                 <p>to upload Only .apk files! </p>
             </DivStyled>
+
+            <ButtonContainer>
+                <Button
+                    backgroundColor={styles.color.confirm}
+                    style={{ width: "100px" }}
+                    onClick={handleClickConfirmButton}
+                >
+                    업로드
+                </Button>
+                <Button
+                    backgroundColor={styles.color.cancel}
+                    style={{ width: "100px" }}
+                    onClick={onClose}
+                >
+                    취소
+                </Button>
+            </ButtonContainer>
         </>
     );
 };

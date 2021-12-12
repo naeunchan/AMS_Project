@@ -1,6 +1,25 @@
 const express = require("express");
 const db = require("../config/db");
+const Multer = require("multer");
+const { Storage } = require("@google-cloud/storage");
+const path = require("path");
+const { format } = require("util");
 const router = express.Router();
+const serviceKey = path.join(__dirname, "../config/keys.json");
+
+const multer = Multer({
+    storage: Multer.memoryStorage(),
+    limits: {
+        fileSize: 1000 * 1024 * 1024,
+    },
+});
+
+const storage = new Storage({
+    keyFilename: serviceKey,
+    projectId: "bccard",
+});
+
+const bucket = storage.bucket("bccard");
 
 const checkPIDSql = "select count(*) as result from user where PID = ?";
 
@@ -105,8 +124,6 @@ router.post("/my", (req, res) => {
 });
 
 // About FILE
-const DFS = (directory) => {};
-
 router.get("/files", (req, res) => {
     const PID = parseInt(req.query.PID);
 
@@ -152,6 +169,62 @@ router.get("/files", (req, res) => {
             res.send("fail");
         }
     });
+});
+
+// Upload File
+router.get("/upload", (req, res) => {
+    res.send("get");
+});
+
+router.post("/upload", multer.array("files"), (req, res) => {
+    try {
+        if (!req.files) {
+            return res.status(400).send({ message: "Please upload a file!" });
+        }
+
+        for (let i = 0; i < req.files.length; i++) {
+            const blob = bucket.file(req.files[i].originalname);
+            const blobStream = blob.createWriteStream({
+                resumable: false,
+            });
+
+            blobStream.on("error", (err) => {
+                res.status(500).send({ message: err.message });
+            });
+
+            blobStream.on("finish", async (data) => {
+                // create a url to access file
+                const publicURL = format(
+                    `https://storage.googleapis.com/${bucket.name}/${blob.name}`
+                );
+
+                try {
+                    await bucket.file(req.files[i].originalname).makePublic();
+                } catch {
+                    return res.status(500).send({
+                        message: `Uploaded the file successfully: ${req.files[i].originalname}, but public access is denied!`,
+                        url: publicURL,
+                    });
+                }
+
+                res.status(200).send({
+                    message: "Uploaded the file successfully: " + req.files[i].originalname,
+                    url: publicURL,
+                });
+            });
+            blobStream.end(req.files[i].buffer);
+        }
+    } catch (err) {
+        console.log(err);
+        if (err.code == "LIMIT_FILE_SIZE") {
+            return res.status(500).send({
+                message: "File size cannot be larger than 1GB!",
+            });
+        }
+        res.status(500).send({
+            message: `Could not upload the file: ${req.files.originalname}. ${err}`,
+        });
+    }
 });
 
 module.exports = router;
