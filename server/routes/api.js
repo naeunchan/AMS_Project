@@ -21,10 +21,26 @@ const storage = new Storage({
 
 const bucket = storage.bucket("bccard");
 
+// SQL
 const checkPIDSql = "select count(*) as result from user where PID = ?";
 
-// 로그인 및 회원가입
+const getFileInfoSql = "select * from file where author_PID = ? order by path, created_at";
 
+const signUpSql =
+    "insert into user (PID, email, password, name, team, phone, nickname) values(?, ?, ?, ?, ?, ?, ?)";
+
+const getUserInfoSql = "select * from user where PID = ?";
+
+const updateUserInfoSql =
+    "update user set password = ?, team = ?, phone = ?, nickname = ? where PID = ?";
+
+const createFileSql =
+    "insert into file (name, version, deadline, description, author_PID, path, download_link) values(?, 0, 0, 0, ?, 0, 0)";
+
+const uploadFileSql =
+    "insert into file (name, version, deadline, description, author_PID, path, download_link) values(?, ?, ?, ?, ?, ?, ?)";
+
+// 로그인 및 회원가입
 router.post("/login", (req, res) => {
     const { PID, password } = req.query;
 
@@ -55,9 +71,6 @@ router.post("/login", (req, res) => {
 
 router.post("/signup", (req, res) => {
     const { PID, password, name, email, team, phone, nickname } = req.query;
-
-    const signUpSql =
-        "insert into user (PID, email, password, name, team, phone, nickname) values(?, ?, ?, ?, ?, ?, ?)";
 
     const user = [
         parseInt(PID),
@@ -91,8 +104,6 @@ router.post("/signup", (req, res) => {
 router.get("/my", (req, res) => {
     const PID = parseInt(req.query.PID);
 
-    const getUserInfoSql = "select * from user where PID = ?";
-
     db.query(getUserInfoSql, PID, (err, data) => {
         if (!err) {
             const { PID, email, password, name, team, phone, nickname } = data[0];
@@ -106,9 +117,6 @@ router.get("/my", (req, res) => {
 
 router.post("/my", (req, res) => {
     const { PID, password, team, phone, nickname } = req.query;
-
-    const updateUserInfoSql =
-        "update user set password = ?, team = ?, phone = ?, nickname = ? where PID = ?";
 
     db.query(
         updateUserInfoSql,
@@ -126,8 +134,6 @@ router.post("/my", (req, res) => {
 // About FILE
 router.get("/files", (req, res) => {
     const PID = parseInt(req.query.PID);
-
-    const getFileInfoSql = "select * from file where author_PID = ? order by path, created_at";
 
     db.query(getFileInfoSql, PID, (err, data) => {
         if (!err) {
@@ -171,49 +177,60 @@ router.get("/files", (req, res) => {
     });
 });
 
-// Upload File
-router.get("/upload", (req, res) => {
-    res.send("get");
+// Create File
+router.post("/create", (req, res) => {
+    const PID = parseInt(req.query.PID);
+    const fileName = req.query.fileName;
+
+    db.query(createFileSql, [fileName, PID], (err, data) => {
+        if (!err) {
+            res.send("success");
+        } else {
+            res.send("error");
+        }
+    });
 });
 
-router.post("/upload", multer.array("files"), (req, res) => {
+// Upload File
+router.post("/upload", multer.single("file"), (req, res) => {
     try {
         if (!req.files) {
             return res.status(400).send({ message: "Please upload a file!" });
         }
 
-        for (let i = 0; i < req.files.length; i++) {
-            const blob = bucket.file(req.files[i].originalname);
-            const blobStream = blob.createWriteStream({
-                resumable: false,
-            });
+        const { PID, fileInfo, parent } = req.query;
+        const { fileName, version, date, description, personName } = fileInfo;
 
-            blobStream.on("error", (err) => {
-                res.status(500).send({ message: err.message });
-            });
+        const blob = bucket.file(req.file.originalname);
+        const blobStream = blob.createWriteStream({
+            resumable: false,
+        });
 
-            blobStream.on("finish", async (data) => {
-                // create a url to access file
-                const publicURL = format(
-                    `https://storage.googleapis.com/${bucket.name}/${blob.name}`
-                );
+        blobStream.on("error", (err) => {
+            res.status(500).send({ message: err.message });
+        });
 
-                try {
-                    await bucket.file(req.files[i].originalname).makePublic();
-                } catch {
-                    return res.status(500).send({
-                        message: `Uploaded the file successfully: ${req.files[i].originalname}, but public access is denied!`,
-                        url: publicURL,
-                    });
-                }
+        blobStream.on("finish", async (data) => {
+            // create a url to access file
+            const publicURL = format(`https://storage.googleapis.com/${bucket.name}/${blob.name}`);
 
-                res.status(200).send({
-                    message: "Uploaded the file successfully: " + req.files[i].originalname,
+            try {
+                await bucket.file(req.file.originalname).makePublic();
+            } catch {
+                return res.status(500).send({
+                    message: `Uploaded the file successfully: ${req.file.originalname}, but public access is denied!`,
                     url: publicURL,
                 });
+            }
+
+            db.query(uploadFileSql, [fileName, version, date, description, PID]);
+
+            res.status(200).send({
+                message: "Uploaded the file successfully: " + req.file.originalname,
+                url: publicURL,
             });
-            blobStream.end(req.files[i].buffer);
-        }
+            blobStream.end(req.file.buffer);
+        });
     } catch (err) {
         console.log(err);
         if (err.code == "LIMIT_FILE_SIZE") {

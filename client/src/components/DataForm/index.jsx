@@ -64,19 +64,41 @@ const groups = {
 
 const DataForm = ({ onClose, ...props }) => {
     const classes = useStyles();
+    const [fileInfo, setFileInfo] = useState({
+        fileName: "",
+        version: "",
+        date: "",
+        description: "",
+    });
 
     const [windowSize, setWindowSize] = useState({
         width: window.innerWidth,
         height: window.innerHeight,
     });
 
-    const [personName, setPersonName] = React.useState([]);
+    const [personName, setPersonName] = useState([]);
 
     const handleResize = () => {
         setWindowSize({
             width: window.innerWidth,
             height: window.innerHeight,
         });
+    };
+
+    const handleChangeFileName = (event) => {
+        setFileInfo({ ...fileInfo, fileName: event.target.value });
+    };
+
+    const handleChangeVersion = (event) => {
+        setFileInfo({ ...fileInfo, version: event.target.value });
+    };
+
+    const handleChangeDate = (event) => {
+        setFileInfo({ ...fileInfo, date: event.target.value });
+    };
+
+    const handleChangeDescription = (event) => {
+        setFileInfo({ ...fileInfo, description: event.target.value });
     };
 
     const handleChange = (event) => {
@@ -155,6 +177,7 @@ const DataForm = ({ onClose, ...props }) => {
                 required
                 fontSize="25px"
                 fontWeight="bold"
+                onChange={handleChangeFileName}
             />
             <FlexContainer>
                 <TextArea
@@ -164,8 +187,13 @@ const DataForm = ({ onClose, ...props }) => {
                         margin: "11px 5px 10px 5px",
                     }}
                     required
+                    onChange={handleChangeVersion}
                 />
-                <DatePickers label="마감일" style={{ margin: "10px 0" }} />
+                <DatePickers
+                    label="마감일"
+                    style={{ margin: "10px 0" }}
+                    onChange={handleChangeDate}
+                />
                 <FormControl className={classes.formControl} style={{ margin: "10px 5px" }}>
                     <InputLabel>팀원 추가</InputLabel>
                     <Select
@@ -206,6 +234,7 @@ const DataForm = ({ onClose, ...props }) => {
                     width: "100%",
                 }}
                 variant="outlined"
+                onChange={handleChangeDescription}
             />
             <FileUpload
                 style={{
@@ -213,6 +242,11 @@ const DataForm = ({ onClose, ...props }) => {
                     height: "100px",
                 }}
                 onClose={onClose}
+                fileInfo={{
+                    ...fileInfo,
+                    date: fileInfo.date ? fileInfo.date : new Date().toISOString().slice(0, 10),
+                    personName,
+                }}
             />
         </Modal>
     );

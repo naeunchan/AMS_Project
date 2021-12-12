@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import IconButton from "@material-ui/core/IconButton";
 import AddCircleOutlineRoundedIcon from "@material-ui/icons/AddCircleOutlineRounded";
-import { DataForm } from "@components";
+import { AddFile } from "@components";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -22,23 +22,21 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-const AddButton = ({ ...props }) => {
+const AddButton = ({ onClick, ...props }) => {
     const classes = useStyles();
     const [modalVisible, setModalVisible] = useState(false);
 
-    const handleClickAddButton = (event) => {
-        event.preventDefault();
+    const handleClickAddButton = () => {
         setModalVisible(true);
     };
 
-    const handleCloseModal = (event) => {
-        event.preventDefault();
+    const handleCloseModal = () => {
         setModalVisible(false);
     };
 
     return (
         <div className={classes.root}>
-            {modalVisible && <DataForm onClose={handleCloseModal} />}
+            {modalVisible && <AddFile onClick={onClick} onClose={handleCloseModal} />}
             <IconButton aria-label="add" onClick={handleClickAddButton}>
                 <AddCircleOutlineRoundedIcon style={{ color: "black", fontSize: "60px" }} />
             </IconButton>

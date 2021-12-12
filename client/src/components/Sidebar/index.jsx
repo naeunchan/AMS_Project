@@ -131,7 +131,7 @@ const useTreeItemStyles = makeStyles((theme) => ({
 
 const StyledTreeItem = (props) => {
     const classes = useTreeItemStyles();
-    const { labelText, color, bgColor, parent, ...other } = props;
+    const { labelText, color, bgColor, parent, onClick, ...other } = props;
 
     return (
         <TreeItem
@@ -156,6 +156,7 @@ const StyledTreeItem = (props) => {
                 group: classes.group,
                 label: classes.label,
             }}
+            onClick={onClick}
             {...other}
         />
     );
@@ -174,9 +175,25 @@ const Sidebar = (props) => {
     const [fileList, setFileList] = useState();
     const PID = parseInt(sessionStorage.getItem("PID"));
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [selected, setSelected] = useState([]);
+    const [created, setCreate] = useState(false);
+
+    const handleSelect = (event, nodeIds) => {
+        const obj = {
+            parent: nodeIds,
+            fileName: event.currentTarget.querySelector("p").innerHTML,
+        };
+
+        localStorage.setItem("selected", JSON.stringify(obj));
+        setSelected(nodeIds);
+    };
 
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
+    };
+
+    const handleClickCreateButton = () => {
+        setCreate(true);
     };
 
     useEffect(() => {
@@ -195,7 +212,7 @@ const Sidebar = (props) => {
                     title: "에러가 발생했습니다!",
                 });
             });
-    }, [PID]);
+    }, [PID, created]);
 
     const drawer = () => {
         const visited = new Map();
@@ -227,14 +244,25 @@ const Sidebar = (props) => {
 
             const parent = fileList[key].child.length ? (
                 <FlexContainer key={key}>
-                    <StyledTreeItem parent nodeId={key} labelText={fileList[key].name}>
+                    <StyledTreeItem
+                        parent
+                        nodeId={key}
+                        labelText={fileList[key].name}
+                        selected={selected}
+                    >
                         {dfs(fileList[key].child)}
                     </StyledTreeItem>
                     <AddChildIcon />
                 </FlexContainer>
             ) : (
                 <FlexContainer key={key}>
-                    <StyledTreeItem parent nodeId={key} labelText={fileList[key].name} key={key} />
+                    <StyledTreeItem
+                        parent
+                        nodeId={key}
+                        labelText={fileList[key].name}
+                        key={key}
+                        selected={selected}
+                    />
                     <AddChildIcon />
                 </FlexContainer>
             );
@@ -247,6 +275,7 @@ const Sidebar = (props) => {
                 className={classes.tree}
                 defaultCollapseIcon={<ExpandMoreIcon />}
                 defaultExpandIcon={<ChevronRightIcon />}
+                onNodeSelect={handleSelect}
             >
                 {files}
             </TreeView>
@@ -258,7 +287,7 @@ const Sidebar = (props) => {
     return (
         <div className={classes.root}>
             <CssBaseline />
-            <AddButton />
+            <AddButton onClick={handleClickCreateButton} />
             <AppBar className={classes.appBar} style={{ display: "flex" }}>
                 <Toolbar>
                     <IconButton

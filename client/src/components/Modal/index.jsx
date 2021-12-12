@@ -25,24 +25,25 @@ const ModalContainer = styled.div`
     background-color: white;
     box-shadow: "7px 14px 20px rgba(0,0,0,1.2)";
     box-sizing: border-box;
-    min-height: 690px;
+    min-height: ${({ minHeight }) => (minHeight ? `${minHeight}px` : "700px")};
     width: ${({ width }) => (width ? `${width}px` : "600px")};
     height: ${({ height }) => (height ? `${height}px` : "700px")};
     font-size: ${styles.fontStyle.large};
 
     @media ${styles.media.sm} {
         width: 300px;
-        height: 690px;
         font-size: ${styles.fontStyle.small};
     }
 `;
 
-const Modal = ({ children, width, height, ...props }) => {
+const Modal = ({ children, width, height, minHeight, ...props }) => {
     const root = document.getElementById("root");
 
     const modal = (
         <BackgroundDim>
-            <ModalContainer style={{ width, height, ...props.style }}>{children}</ModalContainer>
+            <ModalContainer style={{ width, height, minHeight, ...props.style }}>
+                {children}
+            </ModalContainer>
         </BackgroundDim>
     );
 
