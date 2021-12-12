@@ -15,17 +15,7 @@ const ButtonContainer = styled.div`
 const AddFile = ({ onClick, onClose, ...props }) => {
     const [fileName, setFileName] = useState();
 
-    const handleChangeFileName = (event) => {
-        setFileName(event.target.value);
-    };
-
-    const handleKeyUp = (event) => {
-        if (event.key === "Enter") {
-            handleClickConfirmButton();
-        }
-    };
-
-    const handleClickConfirmButton = (event) => {
+    const createFile = () => {
         if (fileName === "") {
             Swal.fire({
                 icon: "warning",
@@ -61,6 +51,19 @@ const AddFile = ({ onClick, onClose, ...props }) => {
                         title: "에러가 발생했습니다!",
                     });
                 });
+        }
+    };
+    const handleChangeFileName = (event) => {
+        setFileName(event.target.value);
+    };
+
+    const handleClickConfirmButton = () => {
+        createFile();
+    };
+
+    const handleKeyUp = (event) => {
+        if (event.key === "Enter") {
+            createFile();
         }
     };
 
