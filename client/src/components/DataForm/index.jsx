@@ -62,6 +62,8 @@ const DataForm = ({
 }) => {
     const classes = useStyles();
     const [team, setTeam] = useState({});
+    const PID = {};
+    const userPID = parseInt(sessionStorage.getItem("PID"));
     const [fileInfo, setFileInfo] = useState({
         fileName,
         version: "",
@@ -230,12 +232,23 @@ const DataForm = ({
                         MenuProps={MenuProps}
                     >
                         {Object.keys(team).map((key) => {
-                            let list = team[key].map((person) => (
-                                <MenuItem key={person.PID} value={person.user_name}>
-                                    <Checkbox checked={personName.indexOf(person.user_name) > -1} />
-                                    <ListItemText primary={person.user_name} />
-                                </MenuItem>
-                            ));
+                            let list = team[key].map((person) => {
+                                const checked = personName.indexOf(person.user_name) > -1;
+
+                                if (checked) {
+                                    PID[person.PID] = person.user_name;
+                                    sessionStorage.setItem("coworkers", JSON.stringify(PID));
+                                }
+
+                                return (
+                                    person.PID !== userPID && (
+                                        <MenuItem key={person.PID} value={person.user_name}>
+                                            <Checkbox checked={checked} />
+                                            <ListItemText primary={person.user_name} />
+                                        </MenuItem>
+                                    )
+                                );
+                            });
 
                             list.unshift(
                                 <MenuItem key={key} value={`Select-All-${key}`}>
@@ -270,7 +283,9 @@ const DataForm = ({
                 fileInfo={{
                     ...fileInfo,
                     date: fileInfo.date ? fileInfo.date : new Date().toISOString().slice(0, 10),
-                    personName,
+                    coworkers: personName.length
+                        ? JSON.parse(sessionStorage.getItem("coworkers"))
+                        : sessionStorage.removeItem("coworkers") || {},
                 }}
             />
         </Modal>

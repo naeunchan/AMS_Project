@@ -43,7 +43,9 @@ const createFileSql =
     "insert into file (name, version, deadline, description, PID, path, download_link) values(?, 0, 0, 0, ?, 0, 0)";
 
 const uploadFileSql =
-    "insert into file (name, version, deadline, PID, path, download_link) values(?, ?, ?, ?, ?, ?)";
+    "insert into file (name, version, deadline, description, PID, path, download_link) values(?, ?, ?, ?, ?, ?, ?)";
+
+const addCoworkerSql = "insert into coworker (PID, FID) values(?, ?);";
 
 // 팀코드 가져오기
 router.get("/team", (req, res) => {
@@ -225,13 +227,11 @@ router.post("/create", (req, res) => {
 });
 
 // Upload File
-router.post("/upload", multer.single("files"), (req, res) => {
+router.post("/upload", multer.single("file"), (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).send({ message: "Please upload a file!" });
         }
-
-        const { PID, fileName, version, date, description, parent, personName } = req.query;
 
         const blob = bucket.file(req.file.originalname);
         const blobStream = blob.createWriteStream({
@@ -255,23 +255,43 @@ router.post("/upload", multer.single("files"), (req, res) => {
                 });
             }
 
-            // db.query(uploadFileSql, [fileName, version, date, description, parseInt(PID), parent]);
-            console.log(publicURL);
-            res.status(200).send({
-                message: "Uploaded the file successfully: " + req.file.originalname,
-                url: publicURL,
-            });
-            blobStream.end(req.file.buffer);
+            const PID = parseInt(req.query.PID);
+            const { fileName, version, date, description, parent, coworkers } = req.query;
+
+            db.query(
+                uploadFileSql,
+                [fileName, version, date, description, PID, parseInt(parent), publicURL],
+                (err, data) => {
+                    if (!err) {
+                        const coworker = JSON.parse(coworkers);
+
+                        for (const key in coworker) {
+                            db.query(addCoworkerSql, [parseInt(key), parseInt(parent)]);
+                        }
+
+                        res.send("success");
+                    } else {
+                        console.log(err);
+                        res.send("error");
+                    }
+                }
+            );
+
+            // res.status(200).send({
+            //     message: "Uploaded the file successfully: " + req.file.originalname,
+            //     url: publicURL,
+            // });
         });
+        blobStream.end(req.file.buffer);
     } catch (err) {
-        console.log(err);
         if (err.code == "LIMIT_FILE_SIZE") {
             return res.status(500).send({
-                message: "File size cannot be larger than 1GB!",
+                message: "File size cannot be larger than 25MB!",
             });
         }
+
         res.status(500).send({
-            message: `Could not upload the file: ${req.files.originalname}. ${err}`,
+            message: `Could not upload the file: ${req.file.originalname}. ${err}`,
         });
     }
 });

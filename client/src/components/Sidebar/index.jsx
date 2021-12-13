@@ -225,11 +225,11 @@ const Sidebar = (props) => {
                 visited.set(FID, true);
 
                 if (!fileList[file.FID].child.length) {
-                    return <StyledTreeItem nodeId={FID} labelText={file.name} key={FID} />;
+                    return <StyledTreeItem nodeId={FID} labelText={file.version} key={FID} />;
                 }
 
                 return (
-                    <StyledTreeItem nodeId={FID} labelText={file.name} key={FID}>
+                    <StyledTreeItem nodeId={FID} labelText={file.version} key={FID}>
                         {dfs(fileList[file.FID].child)}
                     </StyledTreeItem>
                 );
