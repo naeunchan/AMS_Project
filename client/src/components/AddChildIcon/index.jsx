@@ -15,7 +15,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-const AddChildIcon = ({ ...props }) => {
+const AddChildIcon = ({ fileName, parent, ...props }) => {
     const classes = useStyles();
     const [modalVisible, setModalVisible] = useState(false);
 
@@ -31,7 +31,9 @@ const AddChildIcon = ({ ...props }) => {
 
     return (
         <div className={classes.root}>
-            {modalVisible && <DataForm onClose={handleCloseModal} />}
+            {modalVisible && (
+                <DataForm fileName={fileName} parent={parent} onClose={handleCloseModal} />
+            )}
             <IconButton aria-label="addChild" onClick={handleClickAddButton}>
                 <AddRoundedIcon style={{ color: "black" }} />
             </IconButton>

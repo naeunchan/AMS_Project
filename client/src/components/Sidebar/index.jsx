@@ -184,7 +184,7 @@ const Sidebar = (props) => {
             fileName: event.currentTarget.querySelector("p").innerHTML,
         };
 
-        localStorage.setItem("selected", JSON.stringify(obj));
+        sessionStorage.setItem("selected", JSON.stringify(obj));
         setSelected(nodeIds);
     };
 
@@ -220,17 +220,17 @@ const Sidebar = (props) => {
 
         const dfs = (child) =>
             child.map((file) => {
-                const FILE_ID = file.FILE_ID.toString();
+                const FID = file.FID.toString();
 
-                visited.set(FILE_ID, true);
+                visited.set(FID, true);
 
-                if (!fileList[file.FILE_ID].child.length) {
-                    return <StyledTreeItem nodeId={FILE_ID} labelText={file.name} key={FILE_ID} />;
+                if (!fileList[file.FID].child.length) {
+                    return <StyledTreeItem nodeId={FID} labelText={file.name} key={FID} />;
                 }
 
                 return (
-                    <StyledTreeItem nodeId={FILE_ID} labelText={file.name} key={FILE_ID}>
-                        {dfs(fileList[file.FILE_ID].child)}
+                    <StyledTreeItem nodeId={FID} labelText={file.name} key={FID}>
+                        {dfs(fileList[file.FID].child)}
                     </StyledTreeItem>
                 );
             });
@@ -252,7 +252,7 @@ const Sidebar = (props) => {
                     >
                         {dfs(fileList[key].child)}
                     </StyledTreeItem>
-                    <AddChildIcon />
+                    <AddChildIcon fileName={fileList[key].name} parent={key} />
                 </FlexContainer>
             ) : (
                 <FlexContainer key={key}>
@@ -263,7 +263,7 @@ const Sidebar = (props) => {
                         key={key}
                         selected={selected}
                     />
-                    <AddChildIcon />
+                    <AddChildIcon fileName={fileList[key].name} parent={key} />
                 </FlexContainer>
             );
 
