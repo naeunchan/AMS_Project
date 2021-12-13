@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Button from "@material-ui/core/Button";
 import ClickAwayListener from "@material-ui/core/ClickAwayListener";
 import Grow from "@material-ui/core/Grow";
@@ -26,23 +26,27 @@ const MuiMenu = () => {
 	const navigate = useNavigate();
 	const [open, setOpen] = useState(false);
 	const [modalVisible, setModalVisible] = useState(false);
-	const anchorRef = React.useRef(null);
+	const anchorRef = useRef(null);
 
-	const handleClickEditButton = () => {
-		setOpen(false);
-		setModalVisible(true);
+	const handleClickEditButton = (e) => {
+		if (e.key !== "Enter") {
+			setOpen(false);
+			setModalVisible(true);
+		}
 	};
 
-	const handleClickLogoutButton = () => {
-		setOpen(false);
-		sessionStorage.removeItem("PID");
+	const handleClickLogoutButton = (e) => {
+		if (e.key !== "Enter") {
+			setOpen(false);
+			sessionStorage.removeItem("PID");
 
-		Swal.fire({
-			icon: "success",
-			title: "로그아웃 되었습니다!",
-		}).then(() => {
-			navigate("/login");
-		});
+			Swal.fire({
+				icon: "success",
+				title: "로그아웃 되었습니다!",
+			}).then(() => {
+				navigate("/login");
+			});
+		}
 	};
 
 	const handleToggle = () => {
@@ -62,13 +66,16 @@ const MuiMenu = () => {
 	};
 
 	function handleListKeyDown(event) {
+		if (event.key === "Enter") {
+			event.preventDefault();
+		}
 		if (event.key === "Tab") {
 			event.preventDefault();
 			setOpen(false);
 		}
 	}
 
-	const prevOpen = React.useRef(open);
+	const prevOpen = useRef(open);
 	useEffect(() => {
 		if (prevOpen.current === true && open === false) {
 			anchorRef.current.focus();
@@ -78,7 +85,11 @@ const MuiMenu = () => {
 	}, [open]);
 
 	return (
-		<div className={classes.root}>
+		<div
+			className={classes.root}
+			onKeyPress={(e) => {
+				e.key === "Enter" && e.preventDefault();
+			}}>
 			{modalVisible && <My onClick={handleCloseModal} />}
 			<div>
 				<Button

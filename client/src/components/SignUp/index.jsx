@@ -74,6 +74,8 @@ const SignUp = ({ onClick, ...props }) => {
 		showPassword2: false,
 	});
 
+	const team = JSON.parse(sessionStorage.getItem("team"));
+
 	const handleChangePID = (event) => {
 		setValues({ ...values, PID: parseInt(event.target.value) });
 	};
@@ -282,14 +284,13 @@ const SignUp = ({ onClick, ...props }) => {
 					<Select
 						labelId="demo-simple-select-label"
 						id="demo-simple-select"
-						value={values.team}
+						value={values.team || ""}
 						onChange={handleChangeTeam}>
-						<MenuItem value={1}>페이북개발팀</MenuItem>
-						<MenuItem value={2}>페이북회원팀</MenuItem>
-						<MenuItem value={3}>페이북결제팀</MenuItem>
-						<MenuItem value={4}>페이북채널팀</MenuItem>
-						<MenuItem value={5}>마이데이터개발팀</MenuItem>
-						<MenuItem value={6}>CB사업팀</MenuItem>
+						{team.map((v, index) => (
+							<MenuItem value={v.TID} key={index}>
+								{v.name}
+							</MenuItem>
+						))}
 					</Select>
 				</FormControl>
 				<TextField

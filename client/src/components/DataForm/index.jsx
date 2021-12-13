@@ -12,244 +12,282 @@ import Checkbox from "@material-ui/core/Checkbox";
 import Input from "@material-ui/core/Input";
 import ListItemText from "@material-ui/core/ListItemText";
 import MenuItem from "@material-ui/core/MenuItem";
+import axios from "axios";
 
 const FlexContainer = styled.div`
-    display: flex;
-    width: 100%;
+	display: flex;
+	width: 100%;
 `;
 
 const MobileScreen = styled.div`
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    width: 100vw;
-    height: 100vh;
-    top: 0;
-    left: 0;
-    background-color: ${styles.color.mobile};
-    justify-content: center;
-    align-items: center;
-    font-size: 50px;
-    font-weight: bold;
-    color: white;
+	display: flex;
+	flex-direction: column;
+	position: fixed;
+	width: 100vw;
+	height: 100vh;
+	top: 0;
+	left: 0;
+	background-color: ${styles.color.mobile};
+	justify-content: center;
+	align-items: center;
+	font-size: 50px;
+	font-weight: bold;
+	color: white;
 `;
 
 const useStyles = makeStyles((theme) => ({
-    formControl: {
-        margin: theme.spacing(1),
-        minWidth: 120,
-        maxWidth: 300,
-        width: "100%",
-    },
+	formControl: {
+		margin: theme.spacing(1),
+		minWidth: 120,
+		maxWidth: 300,
+		width: "100%",
+	},
 }));
 
 const MenuProps = {
-    PaperProps: {
-        style: {
-            width: 250,
-        },
-    },
-    variant: "menu",
-    getContentAnchorEl: null,
-};
-
-const groups = {
-    페이북개발팀: ["강민주", "나은찬", "윤홍찬", "이진욱", "임채은"],
-    페이북회원팀: ["강나윤", "민은채", "윤은채"],
-    페이북결제팀: ["주찬욱", "강진주", "김윤호"],
-    페이북채널팀: ["임효린", "박동빈", "김철수"],
-    마이데이터개발팀: ["권윤아", "김설아", "강하린"],
-    CB사업팀: ["이채빈", "이호빈", "양예빈"],
+	PaperProps: {
+		style: {
+			width: 250,
+		},
+	},
+	variant: "menu",
+	getContentAnchorEl: null,
 };
 
 const DataForm = ({ onClose, ...props }) => {
-    const classes = useStyles();
-    const [fileInfo, setFileInfo] = useState({
-        fileName: "",
-        version: "",
-        date: "",
-        description: "",
-    });
+	const classes = useStyles();
+	const fileName = JSON.parse(localStorage.getItem("selected")).fileName;
+	const [team, setTeam] = useState({});
 
-    const [windowSize, setWindowSize] = useState({
-        width: window.innerWidth,
-        height: window.innerHeight,
-    });
+	const parent = parseInt(
+		JSON.parse(localStorage.getItem("selected")).parent,
+	);
+	const [fileInfo, setFileInfo] = useState({
+		fileName,
+		version: "",
+		date: "",
+		description: "",
+		parent,
+	});
 
-    const [personName, setPersonName] = useState([]);
+	useEffect(() => {
+		const groups = {};
 
-    const handleResize = () => {
-        setWindowSize({
-            width: window.innerWidth,
-            height: window.innerHeight,
-        });
-    };
+		axios
+			.get("/api/coworker")
+			.then((res) => {
+				res.data.forEach((v) => {
+					const { team_name, ...user } = v;
 
-    const handleChangeFileName = (event) => {
-        setFileInfo({ ...fileInfo, fileName: event.target.value });
-    };
+					if (groups.hasOwnProperty(team_name)) {
+						groups[team_name] = [...groups[team_name], user];
+					} else {
+						groups[team_name] = [user];
+					}
+				});
+			})
+			.then(() => {
+				setTeam(groups);
+			});
+	}, []);
 
-    const handleChangeVersion = (event) => {
-        setFileInfo({ ...fileInfo, version: event.target.value });
-    };
+	const [windowSize, setWindowSize] = useState({
+		width: window.innerWidth,
+		height: window.innerHeight,
+	});
 
-    const handleChangeDate = (event) => {
-        setFileInfo({ ...fileInfo, date: event.target.value });
-    };
+	const [personName, setPersonName] = useState([]);
 
-    const handleChangeDescription = (event) => {
-        setFileInfo({ ...fileInfo, description: event.target.value });
-    };
+	const handleResize = () => {
+		setWindowSize({
+			width: window.innerWidth,
+			height: window.innerHeight,
+		});
+	};
 
-    const handleChange = (event) => {
-        let chunks = [];
+	const handleChangeVersion = (event) => {
+		setFileInfo({ ...fileInfo, version: event.target.value });
+	};
 
-        if (event.target.value && event.target.value.length === 1) {
-            chunks = event.target.value[0].split("-");
-        } else if (event.target.value && event.target.value.length > 1) {
-            chunks = event.target.value[event.target.value.length - 1].split("-");
-        }
+	const handleChangeDate = (event) => {
+		setFileInfo({ ...fileInfo, date: event.target.value });
+	};
 
-        if (chunks[0] === "Select" && chunks[1] === "All") {
-            let groupName = chunks[chunks.length - 1];
+	const handleChangeDescription = (event) => {
+		setFileInfo({ ...fileInfo, description: event.target.value });
+	};
 
-            let names = [...personName];
-            let allSelected = true;
+	const handleChange = (event) => {
+		let chunks = [];
 
-            for (let name of groups[groupName]) {
-                if (names.indexOf(name) < 0) {
-                    allSelected = false;
-                    break;
-                }
-            }
+		if (event.target.value && event.target.value.length === 1) {
+			chunks = event.target.value[0].split("-");
+		} else if (event.target.value && event.target.value.length > 1) {
+			chunks =
+				event.target.value[event.target.value.length - 1].split("-");
+		}
 
-            for (let name of groups[groupName]) {
-                if (names.indexOf(name) >= 0) {
-                    names.splice(names.indexOf(name), 1);
-                }
-            }
+		if (chunks[0] === "Select" && chunks[1] === "All") {
+			let groupName = chunks[chunks.length - 1];
 
-            if (!allSelected) {
-                names = [...names, ...groups[groupName]];
-            }
+			let names = [...personName];
+			let allSelected = true;
 
-            setPersonName(names);
-        } else {
-            setPersonName(event.target.value);
-        }
-    };
+			for (let { user_name } of team[groupName]) {
+				if (names.indexOf(user_name) < 0) {
+					allSelected = false;
+					break;
+				}
+			}
 
-    useEffect(() => {
-        window.addEventListener("resize", handleResize);
+			for (let { user_name } of team[groupName]) {
+				if (names.indexOf(user_name) >= 0) {
+					names.splice(names.indexOf(user_name), 1);
+				}
+			}
 
-        return () => {
-            window.removeEventListener("resize", handleResize);
-        };
-    }, []);
+			if (!allSelected) {
+				const name = [];
 
-    if (isMobile) {
-        return (
-            <MobileScreen>
-                <div>PC 환경에서 </div>
-                <div>진행해주세요!</div>
-            </MobileScreen>
-        );
-    }
+				for (let { user_name } of team[groupName]) {
+					name.push(user_name);
+				}
 
-    if (windowSize.width <= 767) {
-        return (
-            <MobileScreen>
-                <div>더 큰 화면에서</div>
-                <div>진행해주세요!</div>
-            </MobileScreen>
-        );
-    }
+				names = [...names, ...name];
+			}
 
-    return (
-        <Modal width="650px" height="700px" style={{ padding: "0 35px" }}>
-            <TextArea
-                label="파일명"
-                style={{
-                    display: "flex",
-                    margin: "10px 0",
-                    width: "100%",
-                }}
-                required
-                fontSize="25px"
-                fontWeight="bold"
-                onChange={handleChangeFileName}
-            />
-            <FlexContainer>
-                <TextArea
-                    label="버전"
-                    style={{
-                        display: "flex",
-                        margin: "11px 5px 10px 5px",
-                    }}
-                    required
-                    onChange={handleChangeVersion}
-                />
-                <DatePickers
-                    label="마감일"
-                    style={{ margin: "10px 0" }}
-                    onChange={handleChangeDate}
-                />
-                <FormControl className={classes.formControl} style={{ margin: "10px 5px" }}>
-                    <InputLabel>팀원 추가</InputLabel>
-                    <Select
-                        multiple
-                        value={personName}
-                        onChange={handleChange}
-                        input={<Input />}
-                        renderValue={(selected) => selected.join(", ")}
-                        MenuProps={MenuProps}
-                    >
-                        {Object.keys(groups).map((key) => {
-                            let list = groups[key].map((name) => (
-                                <MenuItem key={name} value={name}>
-                                    <Checkbox checked={personName.indexOf(name) > -1} />
-                                    <ListItemText primary={name} />
-                                </MenuItem>
-                            ));
+			setPersonName(names);
+		} else {
+			setPersonName(event.target.value);
+		}
+	};
 
-                            list.unshift(
-                                <MenuItem key={key} value={`Select-All-${key}`}>
-                                    <ListItemText primary={key} secondary="팀 전체 선택/해제" />
-                                </MenuItem>
-                            );
+	useEffect(() => {
+		window.addEventListener("resize", handleResize);
 
-                            return list;
-                        })}
-                    </Select>
-                </FormControl>
-            </FlexContainer>
-            <TextField
-                id="outlined-multiline-static"
-                label="상세정보"
-                rows={15}
-                multiline
-                style={{
-                    display: "flex",
-                    margin: "10px 0",
-                    width: "100%",
-                }}
-                variant="outlined"
-                onChange={handleChangeDescription}
-            />
-            <FileUpload
-                style={{
-                    width: "50px",
-                    height: "100px",
-                }}
-                onClose={onClose}
-                fileInfo={{
-                    ...fileInfo,
-                    date: fileInfo.date ? fileInfo.date : new Date().toISOString().slice(0, 10),
-                    personName,
-                }}
-            />
-        </Modal>
-    );
+		return () => {
+			window.removeEventListener("resize", handleResize);
+		};
+	}, []);
+
+	if (isMobile) {
+		return (
+			<MobileScreen>
+				<div>PC 환경에서 </div>
+				<div>진행해주세요!</div>
+			</MobileScreen>
+		);
+	}
+
+	if (windowSize.width <= 767) {
+		return (
+			<MobileScreen>
+				<div>더 큰 화면에서</div>
+				<div>진행해주세요!</div>
+			</MobileScreen>
+		);
+	}
+
+	return (
+		<Modal width="650px" height="700px" style={{ padding: "0 35px" }}>
+			<TextArea
+				label="애플리케이션명"
+				style={{
+					display: "flex",
+					margin: "10px 0",
+					width: "100%",
+				}}
+				required
+				fontSize="25px"
+				fontWeight="bold"
+				defaultValue={fileName}
+				readOnly
+			/>
+			<FlexContainer>
+				<TextArea
+					label="버전"
+					style={{
+						display: "flex",
+						margin: "11px 5px 10px 5px",
+					}}
+					required
+					onChange={handleChangeVersion}
+				/>
+				<DatePickers
+					label="마감일"
+					style={{ margin: "10px 0" }}
+					onChange={handleChangeDate}
+				/>
+				<FormControl
+					className={classes.formControl}
+					style={{ margin: "10px 5px" }}>
+					<InputLabel>팀원 추가</InputLabel>
+					<Select
+						multiple
+						value={personName}
+						onChange={handleChange}
+						input={<Input />}
+						renderValue={(selected) => selected.join(", ")}
+						MenuProps={MenuProps}>
+						{Object.keys(team).map((key) => {
+							let list = team[key].map((person) => (
+								<MenuItem
+									key={person.PID}
+									value={person.user_name}>
+									<Checkbox
+										checked={
+											personName.indexOf(
+												person.user_name,
+											) > -1
+										}
+									/>
+									<ListItemText primary={person.user_name} />
+								</MenuItem>
+							));
+
+							list.unshift(
+								<MenuItem key={key} value={`Select-All-${key}`}>
+									<ListItemText
+										primary={key}
+										secondary="팀 전체 선택/해제"
+									/>
+								</MenuItem>,
+							);
+
+							return list;
+						})}
+					</Select>
+				</FormControl>
+			</FlexContainer>
+			<TextField
+				id="outlined-multiline-static"
+				label="상세정보"
+				rows={15}
+				multiline
+				style={{
+					display: "flex",
+					margin: "10px 0",
+					width: "100%",
+				}}
+				variant="outlined"
+				onChange={handleChangeDescription}
+			/>
+			<FileUpload
+				style={{
+					width: "50px",
+					height: "100px",
+				}}
+				onClose={onClose}
+				fileInfo={{
+					...fileInfo,
+					date: fileInfo.date
+						? fileInfo.date
+						: new Date().toISOString().slice(0, 10),
+					personName,
+				}}
+			/>
+		</Modal>
+	);
 };
 
 export default DataForm;
