@@ -19,13 +19,11 @@ const AddChildIcon = ({ fileName, parent, ...props }) => {
     const classes = useStyles();
     const [modalVisible, setModalVisible] = useState(false);
 
-    const handleClickAddButton = (event) => {
-        event.preventDefault();
+    const handleClickAddButton = () => {
         setModalVisible(true);
     };
 
-    const handleCloseModal = (event) => {
-        event.preventDefault();
+    const handleCloseModal = () => {
         setModalVisible(false);
     };
 
