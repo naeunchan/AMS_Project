@@ -41,7 +41,7 @@ const FileUpload = ({ fileInfo, onClose, ...props }) => {
     const handleClickConfirmButton = (event) => {
         event.preventDefault();
 
-        const { version, date } = fileInfo;
+        const { version, password } = fileInfo;
         let formData = new FormData();
         let errorMessage = "";
         let isError = false;
@@ -50,8 +50,8 @@ const FileUpload = ({ fileInfo, onClose, ...props }) => {
         if (version === "") {
             errorMessage = "버전을 입력해주세요!";
             isError = true;
-        } else if (date < new Date().toISOString().slice(0, 10)) {
-            errorMessage = "이미 지난 마감일입니다!";
+        } else if (password === "") {
+            errorMessage = "비밀번호를 입력해주세요!";
             isError = true;
         } else if (!acceptedFiles.length) {
             errorMessage = "파일을 추가해주세요!";

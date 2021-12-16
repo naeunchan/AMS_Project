@@ -12,7 +12,12 @@ import Checkbox from "@material-ui/core/Checkbox";
 import Input from "@material-ui/core/Input";
 import ListItemText from "@material-ui/core/ListItemText";
 import MenuItem from "@material-ui/core/MenuItem";
+import Visibility from "@material-ui/icons/Visibility";
+import VisibilityOff from "@material-ui/icons/VisibilityOff";
 import axios from "axios";
+import IconButton from "@material-ui/core/IconButton";
+import InputAdornment from "@material-ui/core/InputAdornment";
+import clsx from "clsx";
 
 const FlexContainer = styled.div`
     display: flex;
@@ -42,6 +47,20 @@ const useStyles = makeStyles((theme) => ({
         maxWidth: 300,
         width: "100%",
     },
+    root: {
+        display: "flex",
+        flexWrap: "wrap",
+        flexDirection: "column",
+    },
+    margin: {
+        margin: "10px 0",
+    },
+    withoutLabel: {
+        marginTop: theme.spacing(3),
+    },
+    textField: {
+        width: "25ch",
+    },
 }));
 
 const MenuProps = {
@@ -57,7 +76,7 @@ const MenuProps = {
 const DataForm = ({
     onClose,
     fileName = JSON.parse(sessionStorage.getItem("selected")).fileName,
-    parent = parseInt(JSON.parse(sessionStorage.getItem("selected")).parent),
+    FID = parseInt(JSON.parse(sessionStorage.getItem("selected")).FID),
     ...props
 }) => {
     const classes = useStyles();
@@ -67,15 +86,18 @@ const DataForm = ({
     const [fileInfo, setFileInfo] = useState({
         fileName,
         version: "",
-        date: "",
+        password: "",
         description: "",
-        parent,
+        FID,
+    });
+    const [values, setValues] = useState({
+        showPassword: false,
     });
 
     useEffect(() => {
         const groups = {};
 
-        sessionStorage.setItem("selected", JSON.stringify({ parent, fileName }));
+        sessionStorage.setItem("selected", JSON.stringify({ FID, fileName }));
 
         axios
             .get("/api/coworker")
@@ -93,7 +115,7 @@ const DataForm = ({
             .then(() => {
                 setTeam(groups);
             });
-    }, [fileName, parent]);
+    }, [fileName, FID]);
 
     const [windowSize, setWindowSize] = useState({
         width: window.innerWidth,
@@ -113,12 +135,20 @@ const DataForm = ({
         setFileInfo({ ...fileInfo, version: event.target.value });
     };
 
-    const handleChangeDate = (event) => {
-        setFileInfo({ ...fileInfo, date: event.target.value });
+    const handleChangePassword = (event) => {
+        setFileInfo({ ...fileInfo, password: event.target.value });
     };
 
     const handleChangeDescription = (event) => {
         setFileInfo({ ...fileInfo, description: event.target.value });
+    };
+
+    const handleClickShowPassword = () => {
+        setValues({ ...values, showPassword: !values.showPassword });
+    };
+
+    const handleMouseDownPassword = (event) => {
+        event.preventDefault();
     };
 
     const handleChange = (event) => {
@@ -216,11 +246,25 @@ const DataForm = ({
                     required
                     onChange={handleChangeVersion}
                 />
-                <DatePickers
-                    label="마감일"
-                    style={{ margin: "10px 0" }}
-                    onChange={handleChangeDate}
-                />
+                <FormControl className={clsx(classes.margin, classes.textField)} required>
+                    <InputLabel htmlFor="standard-adornment-password">비밀번호</InputLabel>
+                    <Input
+                        id="standard-adornment-password"
+                        type={values.showPassword ? "text" : "password"}
+                        endAdornment={
+                            <InputAdornment position="end">
+                                <IconButton
+                                    aria-label="toggle password visibility"
+                                    onClick={handleClickShowPassword}
+                                    onMouseDown={handleMouseDownPassword}
+                                >
+                                    {values.showPassword ? <Visibility /> : <VisibilityOff />}
+                                </IconButton>
+                            </InputAdornment>
+                        }
+                        onChange={handleChangePassword}
+                    />
+                </FormControl>
                 <FormControl className={classes.formControl} style={{ margin: "10px 5px" }}>
                     <InputLabel>팀원 추가</InputLabel>
                     <Select
@@ -249,7 +293,6 @@ const DataForm = ({
                                     )
                                 );
                             });
-
                             list.unshift(
                                 <MenuItem key={key} value={`Select-All-${key}`}>
                                     <ListItemText primary={key} secondary="팀 전체 선택/해제" />
@@ -282,7 +325,6 @@ const DataForm = ({
                 onClose={onClose}
                 fileInfo={{
                     ...fileInfo,
-                    date: fileInfo.date ? fileInfo.date : new Date().toISOString().slice(0, 10),
                     coworkers: personName.length
                         ? JSON.parse(sessionStorage.getItem("coworkers"))
                         : sessionStorage.removeItem("coworkers") || {},

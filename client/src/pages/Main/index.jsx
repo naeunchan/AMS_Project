@@ -2,37 +2,45 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navbar, Sidebar, FileInfo } from "@components";
 import styled from "@emotion/styled";
-import Swal from "sweetalert2";
 
 const Wrapper = styled.div`
-	display: flex;
-	width: 100%;
-	height: 100%;
+    display: flex;
+    width: 100%;
+    height: 100%;
 `;
 
 const Main = () => {
-	const navigate = useNavigate();
-	const [fileName, setFileName] = useState();
+    const navigate = useNavigate();
+    const [fileName, setFileName] = useState();
+    const [selectedFID, setSelectedFID] = useState();
 
-	useEffect(() => {
-		if (!sessionStorage.getItem("PID")) {
-			navigate("/login");
-		}
-	}, [navigate]);
+    useEffect(() => {
+        if (!sessionStorage.getItem("PID")) {
+            navigate("/login");
+        }
+    }, [navigate]);
 
-	const handleChangeFileName = () => {
-		const { fileName } = JSON.parse(sessionStorage.getItem("selected"));
+    const handleChangeFileName = (nodeIds) => {
+        const selectedFile = JSON.parse(sessionStorage.getItem("files"))[nodeIds];
 
-		setFileName(fileName);
-	};
+        sessionStorage.setItem(
+            "selected",
+            JSON.stringify({
+                FID: nodeIds,
+                fileName: selectedFile.name,
+            })
+        );
+        setFileName(selectedFile.name);
+        setSelectedFID(nodeIds);
+    };
 
-	return (
-		<Wrapper>
-			<Navbar />
-			<Sidebar onChange={handleChangeFileName} />
-			{fileName && <FileInfo fileName={fileName} />}
-		</Wrapper>
-	);
+    return (
+        <Wrapper>
+            <Navbar />
+            <Sidebar onChange={handleChangeFileName} />
+            {fileName && <FileInfo fileName={fileName} FID={selectedFID} />}
+        </Wrapper>
+    );
 };
 
 export default Main;

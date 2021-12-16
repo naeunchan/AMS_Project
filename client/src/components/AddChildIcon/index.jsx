@@ -25,12 +25,13 @@ const AddChildIcon = ({ fileName, parent, ...props }) => {
 
     const handleCloseModal = () => {
         setModalVisible(false);
+        window.location.replace("/");
     };
 
     return (
         <div className={classes.root}>
             {modalVisible && (
-                <DataForm fileName={fileName} parent={parent} onClose={handleCloseModal} />
+                <DataForm fileName={fileName} FID={parent} onClose={handleCloseModal} />
             )}
             <IconButton aria-label="addChild" onClick={handleClickAddButton}>
                 <AddRoundedIcon style={{ color: "black" }} />
