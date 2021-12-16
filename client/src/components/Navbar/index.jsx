@@ -39,9 +39,6 @@ const AMS = styled.div`
 		width: 32px;
 		height: 32px;
 	}
-	p {
-		font-size: 20px;
-	}
 
 	@media ${styles.media.sm} {
 		font-size: 26px;
@@ -76,7 +73,7 @@ const Navbar = ({ user = "", children, ...props }) => {
 					alt={image.alt}
 					style={{ marginRight: "10px" }}
 				/>
-				<p>테스트 APK 파일 이력 관리 시스템</p>
+				APK 파일 이력 관리 시스템
 			</AMS>
 			<UserDiv>
 				<MuiMenu />

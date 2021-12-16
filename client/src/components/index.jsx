@@ -13,3 +13,4 @@ export { default as SignUp } from "./SignUp";
 export { default as AddButton } from "./AddButton";
 export { default as AddChildIcon } from "./AddChildIcon";
 export { default as AddFile } from "./AddFile";
+export { default as FileInfo } from "./FileInfo";
