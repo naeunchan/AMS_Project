@@ -15,7 +15,7 @@ import TreeItem from "@material-ui/lab/TreeItem";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { AddButton, AddChildIcon } from "@components";
+import { AddButton, AddChildIcon, SelectChildFile } from "@components";
 import styled from "@emotion/styled";
 
 const drawerWidth = 240;
@@ -185,10 +185,26 @@ const Sidebar = ({ onChange, ...props }) => {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [selected, setSelected] = useState([]);
     const [created, setCreated] = useState(false);
+    const [selectedChildFile, setSelectedChildFile] = useState(false);
+    const [childInfo, setChildInfo] = useState({});
+    const files = JSON.parse(sessionStorage.getItem("files"));
 
     const handleSelect = (event, nodeIds) => {
-        setSelected(nodeIds);
-        onChange(nodeIds);
+        if (files[nodeIds].path === 0) {
+            setSelected(nodeIds);
+            onChange(nodeIds);
+        } else {
+            setChildInfo({
+                FID: nodeIds,
+                fileInfo: files[nodeIds],
+            });
+            setSelectedChildFile(true);
+        }
+    };
+
+    const handleCloseSelectedModal = () => {
+        setChildInfo({});
+        setSelectedChildFile(false);
     };
 
     const handleDrawerToggle = () => {
@@ -207,7 +223,7 @@ const Sidebar = ({ onChange, ...props }) => {
                     sessionStorage.setItem("files", JSON.stringify(res.data));
                 }
             });
-        setCreated(true);
+        setCreated(!created);
     };
 
     useEffect(() => {
@@ -301,6 +317,9 @@ const Sidebar = ({ onChange, ...props }) => {
 
     return (
         <div className={classes.root}>
+            {selectedChildFile && (
+                <SelectChildFile fileInfo={childInfo} onClose={handleCloseSelectedModal} />
+            )}
             <CssBaseline />
             <AppBar className={classes.appBar} style={{ display: "flex" }}>
                 <Toolbar>

@@ -82,9 +82,18 @@ const FileUpload = ({ fileInfo, onClose, ...props }) => {
                             icon: "success",
                             title: "업로드를 완료했습니다!",
                         }).then(() => {
-                            sessionStorage.removeItem("coworkers");
-                            sessionStorage.removeItem("selected");
-                            onClose();
+                            axios
+                                .get("/api/files", {
+                                    params: {
+                                        PID: sessionStorage.getItem("PID"),
+                                    },
+                                })
+                                .then((res) => {
+                                    sessionStorage.setItem("files", JSON.stringify(res.data));
+                                    sessionStorage.removeItem("coworkers");
+                                    sessionStorage.removeItem("selected");
+                                    onClose();
+                                });
                         });
                     } else {
                         Swal.fire({
@@ -102,9 +111,7 @@ const FileUpload = ({ fileInfo, onClose, ...props }) => {
         }
     };
 
-    const acceptedFileItems = acceptedFiles
-        .map((file, index) => `${index + 1}) ${file.path}\n`)
-        .join("");
+    const acceptedFileItems = acceptedFiles.map((file, index) => `${file.path}\n`).join("");
 
     return (
         <>

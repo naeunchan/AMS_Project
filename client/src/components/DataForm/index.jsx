@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Modal, DatePickers, TextArea, FileUpload } from "@components";
+import { Modal, TextArea, FileUpload } from "@components";
 import { isMobile } from "react-device-detect";
 import styled from "@emotion/styled";
 import styles from "@style";
@@ -230,7 +230,6 @@ const DataForm = ({
                     margin: "10px 0",
                     width: "100%",
                 }}
-                required
                 fontSize="25px"
                 fontWeight="bold"
                 defaultValue={fileName}
@@ -265,7 +264,7 @@ const DataForm = ({
                         onChange={handleChangePassword}
                     />
                 </FormControl>
-                <FormControl className={classes.formControl} style={{ margin: "10px 5px" }}>
+                <FormControl className={classes.formControl} style={{ margin: "10px 0 10px 5px" }}>
                     <InputLabel>팀원 추가</InputLabel>
                     <Select
                         multiple

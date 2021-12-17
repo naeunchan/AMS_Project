@@ -51,6 +51,39 @@ const addCoworkerSql = "insert into coworker (PID, FID) values(?, ?);";
 
 const getAllUserInfoSql = "select * from user;";
 
+const getCoworkersInFileSql = "select PID from coworker where FID = ?";
+
+const updateCount = "update file set count = ? where FID = ?";
+
+// 다운로드 카운팅 업데이트
+router.post("/count", (req, res) => {
+    const { FID, count } = req.query;
+
+    db.query(updateCount, [count, parseInt(FID)], (err, data) => {
+        if (!err) {
+            console.log("good");
+            res.send("success");
+        } else {
+            res.send("error");
+        }
+    });
+});
+
+//참조된 팀원 정보
+router.get("/file/coworker", (req, res) => {
+    const FID = parseInt(req.query.FID);
+
+    db.query(getCoworkersInFileSql, FID, (err, data) => {
+        console.log(data);
+        if (!err) {
+            res.send(data);
+        } else {
+            console.log("getCoworkerInFileSql Error!");
+            res.send("error");
+        }
+    });
+});
+
 // 팀코드 가져오기
 router.get("/team", (req, res) => {
     db.query(getTeamCodeSql, null, (err, data) => {
@@ -299,6 +332,7 @@ router.post("/upload", multer.single("file"), (req, res) => {
                 [fileName, version, password, description, PID, parseInt(FID), publicURL],
                 (err, data) => {
                     if (!err) {
+                        const FID = data.insertId;
                         const coworker = JSON.parse(coworkers);
 
                         for (const key in coworker) {

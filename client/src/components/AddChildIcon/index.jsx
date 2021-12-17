@@ -25,7 +25,6 @@ const AddChildIcon = ({ fileName, parent, ...props }) => {
 
     const handleCloseModal = () => {
         setModalVisible(false);
-        window.location.replace("/");
     };
 
     return (

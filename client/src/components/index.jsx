@@ -14,3 +14,4 @@ export { default as AddButton } from "./AddButton";
 export { default as AddChildIcon } from "./AddChildIcon";
 export { default as AddFile } from "./AddFile";
 export { default as FileInfo } from "./FileInfo";
+export { default as SelectChildFile } from "./SelectChildFile";
