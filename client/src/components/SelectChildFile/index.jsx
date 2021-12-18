@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { Modal, TextArea, Button } from "@components";
 import styled from "@emotion/styled";
 import FormControl from "@material-ui/core/FormControl";
@@ -64,48 +64,53 @@ const MenuProps = {
 const SelectChildFile = ({ onClose, fileInfo, ...props }) => {
     const classes = useStyles();
     const { FID, ...rest } = fileInfo;
-    const { name, version, password, count, description, download_link } = rest.fileInfo;
+    const { name, version, password, count, description } = rest.fileInfo;
     const [newCount, setNewCount] = useState(count);
     const users = JSON.parse(sessionStorage.getItem("users"));
     const PID = sessionStorage.getItem("PID");
     const teamInfo = JSON.parse(sessionStorage.getItem("team"));
     const [team, setTeam] = useState([]);
+    const [link, setLink] = useState([]);
 
-    const coworkers = async () => {
-        await axios
-            .get("/api/file/coworker", {
-                params: {
-                    FID,
-                },
-            })
-            .then((res) => {
-                setTeam(res.data);
-                console.log(rest);
-            });
-    };
     const onClick = () => {
-        axios
-            .post("/api/count", null, {
-                params: {
-                    count: newCount,
-                    FID,
-                },
-            })
-            .then(() => {
-                console.log("success");
-            });
+        axios.post("/api/count", null, {
+            params: {
+                count: newCount + 1,
+                FID,
+            },
+        });
 
         setNewCount(newCount + 1);
     };
 
     useEffect(() => {
+        const coworkers = async () => {
+            await axios
+                .get("/api/file/coworker", {
+                    params: {
+                        FID,
+                    },
+                })
+                .then((res) => {
+                    setTeam(res.data);
+                });
+        };
+        axios
+            .post("/api/download", null, {
+                params: {
+                    fileName: name,
+                },
+            })
+            .then((res) => {
+                setLink(res.data);
+            });
         coworkers();
-    }, []);
+    }, [FID, name]);
 
     return (
         <Modal width="650px" height="700px" style={{ padding: "0 35px" }}>
             <TextArea
-                label="애플리케이션명"
+                label="APK 파일명"
                 style={{
                     display: "flex",
                     margin: "10px 0",
@@ -145,7 +150,7 @@ const SelectChildFile = ({ onClose, fileInfo, ...props }) => {
                 <FormControl className={classes.formControl} style={{ margin: "10px 0 10px 5px" }}>
                     <InputLabel>팀원({team.length}명)</InputLabel>
                     <Select
-                        value={0}
+                        value={""}
                         input={<Input />}
                         MenuProps={MenuProps}
                         disabled={!team.length}
@@ -197,10 +202,9 @@ const SelectChildFile = ({ onClose, fileInfo, ...props }) => {
                     style: { fontSize: "0.8rem" },
                     endAdornment: (
                         <InputAdornment position="start" style={{ position: "absolute" }}>
-                            <AStyled href={download_link} onClick={onClick}>
-                                {download_link}
+                            <AStyled href={link} onClick={onClick}>
+                                {name}
                             </AStyled>
-                            ,
                         </InputAdornment>
                     ),
                 }}

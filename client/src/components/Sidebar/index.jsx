@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import AppBar from "@material-ui/core/AppBar";
@@ -40,6 +40,7 @@ const useStyles = makeStyles((theme) => ({
         [theme.breakpoints.down("sm")]: {
             marginTop: "60px",
             visibility: "visible",
+            background: "rgb(123, 128, 154)",
         },
         [theme.breakpoints.up("sm")]: {
             visibility: "hidden",
@@ -56,10 +57,16 @@ const useStyles = makeStyles((theme) => ({
     toolbar: theme.mixins.toolbar,
     drawerPaper: {
         width: drawerWidth,
-        height: "calc(100% - 61px)",
-
+        height: "calc(100% - 90px)",
+        overflowX: "hidden",
+        background: "linear-gradient(195deg, rgb(66, 66, 74), rgb(25, 25, 25))",
+        marginLeft: "10px",
+        borderRadius: "20px",
+        marginTop: "80px",
+        boxShadow: "rgb(0 0 0 / 5%) 0rem 1.25rem 1.6875rem 0rem",
         [theme.breakpoints.down("sm")]: {
-            height: "100%",
+            height: "calc(100% - 25px)",
+            marginTop: "10px",
         },
     },
     content: {
@@ -82,10 +89,10 @@ const useStyles = makeStyles((theme) => ({
         marginLeft: "10px",
 
         [theme.breakpoints.down("sm")]: {
-            marginTop: "60px",
+            marginTop: "30px",
         },
         [theme.breakpoints.up("sm")]: {
-            marginTop: "75px",
+            margin: "20px",
         },
     },
 }));
@@ -93,19 +100,20 @@ const useStyles = makeStyles((theme) => ({
 const useTreeItemStyles = makeStyles((theme) => ({
     root: {
         width: "100%",
-        color: theme.palette.text.secondary,
         "&:focus > $content": {
-            color: "black",
+            background: "linear-gradient(195deg, rgb(73, 163, 241), rgb(26, 115, 232))",
         },
     },
     content: {
-        color: theme.palette.text.secondary,
-        borderTopRightRadius: theme.spacing(2),
-        borderBottomRightRadius: theme.spacing(2),
+        color: "white",
+        borderRadius: "8px",
         paddingRight: theme.spacing(1),
         fontWeight: theme.typography.fontWeightMedium,
         "$expanded > &": {
             fontWeight: theme.typography.fontWeightRegular,
+        },
+        "&:hover": {
+            background: "rgba(80,80,80,0.7)",
         },
     },
     group: {
@@ -122,6 +130,7 @@ const useTreeItemStyles = makeStyles((theme) => ({
         display: "flex",
         alignItems: "center",
         padding: theme.spacing(0.5, 0),
+        color: "white",
     },
     labelText: {
         flexGrow: 1,
@@ -132,10 +141,15 @@ const useTreeItemStyles = makeStyles((theme) => ({
         display: "flex",
         alignItems: "center",
         padding: theme.spacing(0.5, 0),
-        fontWeight: "bold",
         fontSize: "1.25rem",
+        color: "white",
     },
 }));
+
+const FlexContainer = styled.div`
+    display: flex;
+    border-radius: 8px;
+`;
 
 const StyledTreeItem = (props) => {
     const classes = useTreeItemStyles();
@@ -153,10 +167,6 @@ const StyledTreeItem = (props) => {
                     </Typography>
                 </div>
             }
-            style={{
-                "--tree-view-color": color,
-                "--tree-view-bg-color": bgColor,
-            }}
             classes={{
                 root: classes.root,
                 content: classes.content,
@@ -170,33 +180,64 @@ const StyledTreeItem = (props) => {
     );
 };
 
-const FlexContainer = styled.div`
-    display: flex;
-    justify-content: "center";
-    align-items: "center";
-`;
-
 const Sidebar = ({ onChange, ...props }) => {
     const { window } = props;
     const classes = useStyles();
     const theme = useTheme();
-    const [fileList, setFileList] = useState([]);
     const PID = parseInt(sessionStorage.getItem("PID"));
     const [mobileOpen, setMobileOpen] = useState(false);
     const [selected, setSelected] = useState([]);
     const [created, setCreated] = useState(false);
     const [selectedChildFile, setSelectedChildFile] = useState(false);
     const [childInfo, setChildInfo] = useState({});
-    const files = JSON.parse(sessionStorage.getItem("files"));
+    const [allFiles, setAllFiles] = useState();
+    const [allUsers, setAllUsers] = useState();
+
+    useEffect(() => {
+        sessionStorage.removeItem("selected");
+        const getFiles = async () => {
+            axios
+                .get("/api/files", {
+                    params: { PID },
+                })
+                .then((res) => {
+                    if (res.data) {
+                        setAllFiles(res.data);
+                    }
+                })
+                .catch((err) => {
+                    Swal.fire({
+                        icon: "error",
+                        title: "에러가 발생했습니다!",
+                    });
+                });
+        };
+
+        getFiles();
+    }, [PID, created]);
+
+    useEffect(() => {
+        sessionStorage.removeItem("users");
+        const getUsers = async () => {
+            axios.get("/api/users").then((res) => {
+                setAllUsers(res.data);
+            });
+        };
+
+        getUsers();
+    }, []);
+
+    sessionStorage.setItem("files", JSON.stringify(allFiles));
+    sessionStorage.setItem("users", JSON.stringify(allUsers));
 
     const handleSelect = (event, nodeIds) => {
-        if (files[nodeIds].path === 0) {
+        if (allFiles[nodeIds].path === 0) {
             setSelected(nodeIds);
             onChange(nodeIds);
         } else {
             setChildInfo({
                 FID: nodeIds,
-                fileInfo: files[nodeIds],
+                fileInfo: allFiles[nodeIds],
             });
             setSelectedChildFile(true);
         }
@@ -226,25 +267,6 @@ const Sidebar = ({ onChange, ...props }) => {
         setCreated(!created);
     };
 
-    useEffect(() => {
-        sessionStorage.removeItem("selected");
-        axios
-            .get("/api/files", {
-                params: { PID },
-            })
-            .then((res) => {
-                if (res.data) {
-                    setFileList(res.data);
-                }
-            })
-            .catch((err) => {
-                Swal.fire({
-                    icon: "error",
-                    title: "에러가 발생했습니다!",
-                });
-            });
-    }, [PID, created]);
-
     const drawer = () => {
         const visited = new Map();
         const files = [];
@@ -255,46 +277,46 @@ const Sidebar = ({ onChange, ...props }) => {
 
                 visited.set(FID, true);
 
-                if (!fileList[file.FID].child.length) {
+                if (!allFiles[file.FID].child.length) {
                     return <StyledTreeItem nodeId={FID} labelText={file.version} key={FID} />;
                 }
 
                 return (
                     <StyledTreeItem nodeId={FID} labelText={file.version} key={FID}>
-                        {dfs(fileList[file.FID].child)}
+                        {dfs(allFiles[file.FID].child)}
                     </StyledTreeItem>
                 );
             });
 
-        for (const key in fileList) {
-            if (visited.has(key)) {
+        for (const key in allFiles) {
+            if (visited.has(key) || allFiles[key].path !== 0) {
                 continue;
             }
 
             visited.get(key, true);
 
-            const parent = fileList[key].child.length ? (
+            const parent = allFiles[key].child.length ? (
                 <FlexContainer key={key}>
                     <StyledTreeItem
                         parent
                         nodeId={key}
-                        labelText={fileList[key].name}
+                        labelText={allFiles[key].name}
                         selected={selected}
                     >
-                        {dfs(fileList[key].child)}
+                        {dfs(allFiles[key].child)}
                     </StyledTreeItem>
-                    <AddChildIcon fileName={fileList[key].name} parent={key} />
+                    <AddChildIcon fileName={allFiles[key].name} parent={key} />
                 </FlexContainer>
             ) : (
                 <FlexContainer key={key}>
                     <StyledTreeItem
                         parent
                         nodeId={key}
-                        labelText={fileList[key].name}
+                        labelText={allFiles[key].name}
                         key={key}
                         selected={selected}
                     />
-                    <AddChildIcon fileName={fileList[key].name} parent={key} />
+                    <AddChildIcon fileName={allFiles[key].name} parent={key} />
                 </FlexContainer>
             );
 
@@ -361,13 +383,13 @@ const Sidebar = ({ onChange, ...props }) => {
                         open
                     >
                         {drawer()}
+                        <AddButton onClick={handleClickCreateButton} />
                     </Drawer>
                 </Hidden>
             </nav>
             <main className={classes.content}>
                 <div className={classes.toolbar} />
             </main>
-            <AddButton onClick={handleClickCreateButton} />
         </div>
     );
 };

@@ -38,7 +38,7 @@ const Main = () => {
         <Wrapper>
             <Navbar />
             <Sidebar onChange={handleChangeFileName} />
-            {fileName && <FileInfo fileName={fileName} FID={selectedFID} />}
+            {fileName && <FileInfo fileName={fileName} FID={parseInt(selectedFID)} />}
         </Wrapper>
     );
 };

@@ -33,7 +33,7 @@ const AddChildIcon = ({ fileName, parent, ...props }) => {
                 <DataForm fileName={fileName} FID={parent} onClose={handleCloseModal} />
             )}
             <IconButton aria-label="addChild" onClick={handleClickAddButton}>
-                <AddRoundedIcon style={{ color: "black" }} />
+                <AddRoundedIcon style={{ color: "white" }} />
             </IconButton>
         </div>
     );

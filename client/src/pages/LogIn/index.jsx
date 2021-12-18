@@ -45,6 +45,7 @@ const ImageContainer = styled.div`
 
 const InputContainer = styled.div`
     display: flex;
+    width: 100%;
     flex-direction: column;
     margin: 20px 0 20px 0;
 `;
@@ -60,6 +61,7 @@ const LogIn = () => {
     const [PID, setPID] = useState("");
     const [password, setPassword] = useState("");
     const [modalVisible, setModalVisible] = useState(false);
+    const [team, setTeam] = useState();
 
     const handleChangePID = (e) => {
         setPID(parseInt(e.target.value));
@@ -70,10 +72,13 @@ const LogIn = () => {
     };
 
     useEffect(() => {
-        axios.get("/api/team").then((res) => {
-            sessionStorage.setItem("team", JSON.stringify(res.data));
-        });
-    });
+        if (!team) {
+            axios.get("/api/team").then((res) => {
+                setTeam(res.data);
+                sessionStorage.setItem("team", JSON.stringify(res.data));
+            });
+        }
+    }, [team]);
 
     const handleClickLogInButton = () => {
         axios
@@ -84,19 +89,10 @@ const LogIn = () => {
                 },
             })
             .then((res) => {
-                const { info, files, users } = res.data;
+                const info = res.data;
 
                 if (info[0].PID === PID && info[0].password === password) {
-                    const allUsers = {};
                     sessionStorage.setItem("PID", PID);
-                    sessionStorage.setItem("files", JSON.stringify(files[0]));
-
-                    users[0].forEach((user) => {
-                        const { PID, ...rest } = user;
-
-                        allUsers[PID] = rest;
-                    });
-                    sessionStorage.setItem("users", JSON.stringify(allUsers));
                     navigate("/");
                 } else {
                     Swal.fire({
@@ -134,6 +130,7 @@ const LogIn = () => {
                         type="text"
                         placeholder="사번"
                         style={{
+                            width: "100%",
                             marginBottom: "20px",
                             paddingLeft: "10px",
                         }}
@@ -146,7 +143,7 @@ const LogIn = () => {
                         type="password"
                         placeholder="password"
                         password
-                        style={{ paddingLeft: "10px" }}
+                        style={{ paddingLeft: "10px", width: "100%" }}
                         onChange={handleChangePassword}
                         onKeyPress={(e) => {
                             e.key === "Enter" && handleClickLogInButton();

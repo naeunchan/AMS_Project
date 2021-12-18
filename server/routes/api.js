@@ -3,9 +3,10 @@ const db = require("../config/db");
 const Multer = require("multer");
 const { Storage } = require("@google-cloud/storage");
 const path = require("path");
-const { format } = require("util");
 const router = express.Router();
 const serviceKey = path.join(__dirname, "../config/keys.json");
+const fetch = require("node-fetch");
+const crypto = require("crypto");
 
 const multer = Multer({
     storage: Multer.memoryStorage(),
@@ -21,6 +22,101 @@ const storage = new Storage({
 
 const bucket = storage.bucket("bccard");
 
+const configureBucketCors = async () => {
+    await storage.bucket("bccard").setCorsConfiguration([
+        {
+            maxAgeSeconds: 3600,
+            method: ["PUT", "GET", "POST", "DELETE"],
+            origin: ["http://localhost:8000", "http://localhost:3000"],
+            responseHeader: [
+                "Content-Type",
+                "Authorization",
+                "Access-Control-Allow-Origin",
+                "x-goog-resumable",
+            ],
+        },
+    ]);
+};
+
+configureBucketCors();
+
+router.post("/upload", multer.single("file"), async (req, res) => {
+    const options = {
+        version: "v4",
+        action: "write",
+        expires: Date.now() + 15 * 60 * 1000,
+        contentType: "application/octet-stream",
+    };
+
+    res.set("Access-Control-Allow-Origin", "http://localhost:3000");
+
+    const { version, password, description, FID, coworkers } = req.query;
+
+    const PID = parseInt(req.query.PID);
+
+    crypto.randomBytes(64, async (err, buf) => {
+        const fileName = req.file.originalname;
+        const salt = buf.toString("base64");
+        const [url] = await storage.bucket("bccard").file(fileName).getSignedUrl(options);
+
+        await fetch(url, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/octet-stream",
+            },
+            body: req.file.buffer,
+        });
+
+        crypto.pbkdf2(fileName, salt, 10000, 64, "sha512", (err, key) => {
+            db.query(
+                uploadFileSql,
+                [fileName, version, password, description, PID, parseInt(FID), salt],
+                (err, data) => {
+                    if (!err) {
+                        const FID = data.insertId;
+                        const coworker = JSON.parse(coworkers);
+
+                        for (const key in coworker) {
+                            db.query(addCoworkerSql, [parseInt(key), parseInt(FID)]);
+                        }
+
+                        res.send("success");
+                    } else {
+                        console.log(err);
+                        res.send("error");
+                    }
+                }
+            );
+        });
+    });
+});
+
+router.post("/download", async (req, res) => {
+    const { fileName } = req.query;
+
+    const options = {
+        version: "v4",
+        action: "read",
+        expires: Date.now() + 15 * 60 * 1000,
+    };
+
+    const [url] = await storage.bucket("bccard").file(fileName).getSignedUrl(options);
+    res.send(url);
+});
+
+// 다운로드 카운팅 업데이트
+router.post("/count", async (req, res) => {
+    const { FID, count } = req.query;
+
+    db.query(updateCount, [count, parseInt(FID)], (err, data) => {
+        if (!err) {
+            res.send("success");
+        } else {
+            res.send("error");
+        }
+    });
+});
+
 // SQL
 const getTeamCodeSql = "select * from team";
 
@@ -30,6 +126,9 @@ const getCoworkerSql =
 const checkPIDSql = "select count(*) as result from user where PID = ?";
 
 const getFileInfoSql = "select * from file where PID = ? order by path, created_at";
+const getFileTeamInfoSql =
+    "select * from COWORKER, FILE where COWORKER.PID = ? and coworker.FID = FILE.FID";
+const getRootFileSql = "select * from FILE where path = 0";
 
 const getSelectedFileInfoSql = "select * from where FID = ? and PID = ? order by created_at";
 
@@ -55,16 +154,16 @@ const getCoworkersInFileSql = "select PID from coworker where FID = ?";
 
 const updateCount = "update file set count = ? where FID = ?";
 
-// 다운로드 카운팅 업데이트
-router.post("/count", (req, res) => {
-    const { FID, count } = req.query;
-
-    db.query(updateCount, [count, parseInt(FID)], (err, data) => {
+router.get("/users", (req, res) => {
+    db.query(getAllUserInfoSql, null, (err, data) => {
         if (!err) {
-            console.log("good");
-            res.send("success");
-        } else {
-            res.send("error");
+            const users = {};
+
+            data.forEach((user) => {
+                const { PID, ...rest } = user;
+                users[PID] = rest;
+            });
+            res.send(users);
         }
     });
 });
@@ -74,7 +173,6 @@ router.get("/file/coworker", (req, res) => {
     const FID = parseInt(req.query.FID);
 
     db.query(getCoworkersInFileSql, FID, (err, data) => {
-        console.log(data);
         if (!err) {
             res.send(data);
         } else {
@@ -88,10 +186,8 @@ router.get("/file/coworker", (req, res) => {
 router.get("/team", (req, res) => {
     db.query(getTeamCodeSql, null, (err, data) => {
         if (!err) {
-            console.log(data);
             res.send(data);
         } else {
-            console.log(err);
             res.send("error");
         }
     });
@@ -113,8 +209,6 @@ router.get("/coworker", (req, res) => {
 // 로그인 및 회원가입
 router.post("/login", (req, res) => {
     const { PID, password } = req.query;
-    const files = [];
-    const users = [];
     const info = [];
 
     db.query(checkPIDSql, PID, (err, data) => {
@@ -129,23 +223,7 @@ router.post("/login", (req, res) => {
                         } else {
                             info.push(data[0]);
 
-                            db.query(getAllUserInfoSql, (err, data) => {
-                                if (!err) {
-                                    users.push(data);
-
-                                    db.query(getFileInfoSql, PID, (err, data) => {
-                                        if (!err) {
-                                            files.push(DFS(data));
-
-                                            res.send({
-                                                info,
-                                                users,
-                                                files,
-                                            });
-                                        }
-                                    });
-                                }
-                            });
+                            res.send(info);
                         }
                     } else {
                         res.send("에러가 발생했습니다!");
@@ -262,12 +340,34 @@ const DFS = (data) => {
 
 router.get("/files", (req, res) => {
     const PID = parseInt(req.query.PID);
+    let result = {};
 
-    db.query(getFileInfoSql, PID, (err, data) => {
+    db.query(getRootFileSql, null, (err, data) => {
         if (!err) {
-            res.send(DFS(data));
-        } else {
-            res.send("fail");
+            const allFiles = data;
+
+            db.query(getFileInfoSql, PID, (err, data) => {
+                if (!err) {
+                    result = DFS([...allFiles, ...data]);
+                    db.query(getFileTeamInfoSql, PID, (err, data) => {
+                        if (!err) {
+                            const rest = { ...result };
+
+                            result = DFS([...allFiles, ...data]);
+
+                            for (const k in result) {
+                                if (!rest[k]) {
+                                    rest[k] = result[k];
+                                } else if (rest[k].child.length < result[k].child.length) {
+                                    rest[k] = result[k];
+                                }
+                            }
+
+                            res.send({ ...rest });
+                        }
+                    });
+                }
+            });
         }
     });
 });
@@ -294,76 +394,6 @@ router.post("/create", (req, res) => {
             res.send("error");
         }
     });
-});
-
-// Upload File
-router.post("/upload", multer.single("file"), (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).send({ message: "Please upload a file!" });
-        }
-
-        const blob = bucket.file(req.file.originalname);
-        const blobStream = blob.createWriteStream({
-            resumable: false,
-        });
-
-        blobStream.on("error", (err) => {
-            res.status(500).send({ message: err.message });
-        });
-
-        blobStream.on("finish", async (data) => {
-            // create a url to access file
-            const publicURL = format(`https://storage.googleapis.com/${bucket.name}/${blob.name}`);
-
-            try {
-                await bucket.file(req.file.originalname).makePublic();
-            } catch {
-                return res.status(500).send({
-                    message: `Uploaded the file successfully: ${req.file.originalname}, but public access is denied!`,
-                    url: publicURL,
-                });
-            }
-
-            const PID = parseInt(req.query.PID);
-            const { fileName, version, password, description, FID, coworkers } = req.query;
-            db.query(
-                uploadFileSql,
-                [fileName, version, password, description, PID, parseInt(FID), publicURL],
-                (err, data) => {
-                    if (!err) {
-                        const FID = data.insertId;
-                        const coworker = JSON.parse(coworkers);
-
-                        for (const key in coworker) {
-                            db.query(addCoworkerSql, [parseInt(key), parseInt(FID)]);
-                        }
-
-                        res.send("success");
-                    } else {
-                        console.log(err);
-                        res.send("error");
-                    }
-                }
-            );
-
-            // res.status(200).send({
-            //     message: "Uploaded the file successfully: " + req.file.originalname,
-            //     url: publicURL,
-            // });
-        });
-        blobStream.end(req.file.buffer);
-    } catch (err) {
-        if (err.code == "LIMIT_FILE_SIZE") {
-            return res.status(500).send({
-                message: "File size cannot be larger than 25MB!",
-            });
-        }
-
-        res.status(500).send({
-            message: `Could not upload the file: ${req.file.originalname}. ${err}`,
-        });
-    }
 });
 
 module.exports = router;
