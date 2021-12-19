@@ -15,11 +15,23 @@ const image = {
 const FormBox = styled.div`
     display: flex;
     position: fixed;
-    top: 40%;
+    top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     justify-content: center;
     align-items: center;
+    border-radius: 16px;
+    margin-top: 15px;
+    padding: 50px 20px;
+    background-color: white;
+    box-sizing: border-box;
+    box-shadow: rgb(0 0 0 / 10%) 0rem 0.25rem 0.375rem -0.0625rem,
+        rgb(0 0 0 / 6%) 0rem 0.125rem 0.25rem -0.0625rem;
+
+    @media ${styles.media.sm} {
+        font-size: 1rem;
+        margin: 10px 0;
+    }
 `;
 
 const Container = styled.div`
@@ -35,12 +47,7 @@ const ImageContainer = styled.div`
     align-items: center;
     flex-direction: column;
     margin-bottom: 20px;
-
-    & > p {
-        margin-top: 50px;
-        font-size: 22px;
-        font-weight: bold;
-    }
+    text-align: center;
 `;
 
 const InputContainer = styled.div`
@@ -54,6 +61,23 @@ const ButtonContainer = styled.div`
     width: 100%;
     display: flex;
     flex-direction: column;
+`;
+
+const StyledDiv = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin: 40px 0;
+
+    @media ${styles.media.sm} {
+        font-size: 1rem;
+        margin: 10px 0;
+        padding: 10px;
+    }
 `;
 
 const LogIn = () => {
@@ -123,8 +147,8 @@ const LogIn = () => {
             <Container>
                 <ImageContainer>
                     <img src={image.src} alt={image.alt} width="80px" height="80px" />
-                    <p>테스트 APK 파일 이력 관리 시스템</p>
                 </ImageContainer>
+                <StyledDiv>테스트 APK 파일 이력 관리 시스템</StyledDiv>
                 <InputContainer>
                     <Input
                         type="text"

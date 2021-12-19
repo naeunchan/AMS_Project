@@ -43,8 +43,6 @@ const BackgroundDim = styled.div`
     align-items: center;
 `;
 
-const Container = styled.div``;
-
 const FileUpload = ({ fileInfo, onClose, ...props }) => {
     const { getRootProps, getInputProps, acceptedFiles } = useDropzone({
         noKeyboard: true,

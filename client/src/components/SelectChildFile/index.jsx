@@ -67,7 +67,6 @@ const SelectChildFile = ({ onClose, fileInfo, ...props }) => {
     const { name, version, password, count, description } = rest.fileInfo;
     const [newCount, setNewCount] = useState(count);
     const users = JSON.parse(sessionStorage.getItem("users"));
-    const PID = sessionStorage.getItem("PID");
     const teamInfo = JSON.parse(sessionStorage.getItem("team"));
     const [team, setTeam] = useState([]);
     const [link, setLink] = useState([]);
@@ -159,11 +158,9 @@ const SelectChildFile = ({ onClose, fileInfo, ...props }) => {
                             const CPID = user.PID;
 
                             return (
-                                PID !== CPID && (
-                                    <MenuItem value={index} key={CPID}>
-                                        {users[CPID].name}({teamInfo[users[CPID].TID].name})
-                                    </MenuItem>
-                                )
+                                <MenuItem value={index} key={CPID}>
+                                    {users[CPID].name}({teamInfo[users[CPID].TID].name})
+                                </MenuItem>
                             );
                         })}
                     </Select>

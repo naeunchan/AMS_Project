@@ -323,7 +323,7 @@ const Sidebar = ({ onChange, ...props }) => {
 
             files.push(parent);
         }
-
+        console.log(files);
         return (
             <TreeView
                 className={classes.tree}
