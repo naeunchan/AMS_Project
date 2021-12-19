@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, Modal } from "@components";
+import { Button, Modal, Spinner } from "@components";
 import styled from "@emotion/styled";
 import styles from "@style";
 import Swal from "sweetalert2";
@@ -64,6 +64,8 @@ const My = ({ onClick, ...props }) => {
     const [userInfo, setUserInfo] = useState(null);
     const PID = parseInt(sessionStorage.getItem("PID"));
     const [showPW, setShowPW] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const team = JSON.parse(sessionStorage.getItem("team"));
 
     const handleMouseDownPassword = (event) => {
         event.preventDefault();
@@ -78,7 +80,7 @@ const My = ({ onClick, ...props }) => {
     };
 
     const handleChangeTeam = (event) => {
-        setUserInfo({ ...userInfo, team: event.target.value });
+        setUserInfo({ ...userInfo, TID: event.target.value });
     };
 
     const handleChangePhone = (event) => {
@@ -90,7 +92,7 @@ const My = ({ onClick, ...props }) => {
     };
 
     const handleClickEditButton = () => {
-        const { password, team, phone, nickname } = userInfo;
+        const { password, TID, phone, nickname } = userInfo;
         let errorMsg = "";
         let isError = false;
 
@@ -116,7 +118,7 @@ const My = ({ onClick, ...props }) => {
                     params: {
                         PID,
                         password,
-                        team,
+                        TID,
                         phone,
                         nickname,
                     },
@@ -146,39 +148,26 @@ const My = ({ onClick, ...props }) => {
     };
 
     useEffect(() => {
-        axios
-            .get("/api/my", {
-                params: { PID },
-            })
-            .then((res) => {
-                if (res.data.PID === PID) {
-                    setUserInfo(res.data);
-                } else {
-                    Swal.fire({
-                        icon: "error",
-                        title: res.data,
-                    });
-                }
-            })
-            .catch((err) => {
-                Swal.fire({
-                    icon: "error",
-                    title: "에러가 발생했습니다!",
-                });
-            });
+        const getMyInfo = async () => {
+            setIsLoading(true);
+            setUserInfo(JSON.parse(sessionStorage.getItem("users"))[PID]);
+            setIsLoading(false);
+        };
+
+        getMyInfo();
     }, [PID]);
 
     return (
         <Modal>
+            {isLoading && <Spinner />}
             <Title>마이 페이지</Title>
             {userInfo && (
                 <>
                     <div className={classes.root}>
                         <TextField
                             className={classes.margin}
-                            id="standard-read-only-input"
                             label="사번"
-                            defaultValue={userInfo.PID}
+                            defaultValue={PID}
                             InputProps={{
                                 readOnly: true,
                             }}
@@ -210,7 +199,6 @@ const My = ({ onClick, ...props }) => {
                         </FormControl>
                         <TextField
                             className={classes.margin}
-                            id="standard-read-only-input"
                             label="이름"
                             defaultValue={userInfo.name}
                             InputProps={{
@@ -220,7 +208,6 @@ const My = ({ onClick, ...props }) => {
                         />
                         <TextField
                             className={classes.margin}
-                            id="standard-read-only-input"
                             label="이메일"
                             defaultValue={userInfo.email}
                             InputProps={{
@@ -233,15 +220,14 @@ const My = ({ onClick, ...props }) => {
                             <Select
                                 labelId="demo-simple-select-label"
                                 id="demo-simple-select"
-                                value={userInfo.team}
+                                value={team[userInfo.TID - 1].TID}
                                 onChange={handleChangeTeam}
                             >
-                                <MenuItem value={1}>페이북개발팀</MenuItem>
-                                <MenuItem value={2}>페이북회원팀</MenuItem>
-                                <MenuItem value={3}>페이북결제팀</MenuItem>
-                                <MenuItem value={4}>페이북채널팀</MenuItem>
-                                <MenuItem value={5}>마이데이터개발팀</MenuItem>
-                                <MenuItem value={6}>CB사업팀</MenuItem>
+                                {team.map((t) => (
+                                    <MenuItem value={t.TID} key={t.TID}>
+                                        {t.name}
+                                    </MenuItem>
+                                ))}
                             </Select>
                         </FormControl>
                         <TextField

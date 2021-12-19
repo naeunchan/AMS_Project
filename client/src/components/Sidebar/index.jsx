@@ -15,7 +15,7 @@ import TreeItem from "@material-ui/lab/TreeItem";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { AddButton, AddChildIcon, SelectChildFile } from "@components";
+import { AddButton, AddChildIcon, SelectChildFile, Spinner, Modal } from "@components";
 import styled from "@emotion/styled";
 
 const drawerWidth = 240;
@@ -170,7 +170,6 @@ const StyledTreeItem = (props) => {
             classes={{
                 root: classes.root,
                 content: classes.content,
-                expanded: classes.expanded,
                 group: classes.group,
                 label: classes.label,
             }}
@@ -192,10 +191,12 @@ const Sidebar = ({ onChange, ...props }) => {
     const [childInfo, setChildInfo] = useState({});
     const [allFiles, setAllFiles] = useState();
     const [allUsers, setAllUsers] = useState();
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         sessionStorage.removeItem("selected");
         const getFiles = async () => {
+            setIsLoading(true);
             axios
                 .get("/api/files", {
                     params: { PID },
@@ -203,6 +204,7 @@ const Sidebar = ({ onChange, ...props }) => {
                 .then((res) => {
                     if (res.data) {
                         setAllFiles(res.data);
+                        setIsLoading(false);
                     }
                 })
                 .catch((err) => {
@@ -212,7 +214,6 @@ const Sidebar = ({ onChange, ...props }) => {
                     });
                 });
         };
-
         getFiles();
     }, [PID, created]);
 
@@ -338,59 +339,62 @@ const Sidebar = ({ onChange, ...props }) => {
     const container = window !== undefined ? () => window().document.body : undefined;
 
     return (
-        <div className={classes.root}>
-            {selectedChildFile && (
-                <SelectChildFile fileInfo={childInfo} onClose={handleCloseSelectedModal} />
-            )}
-            <CssBaseline />
-            <AppBar className={classes.appBar} style={{ display: "flex" }}>
-                <Toolbar>
-                    <IconButton
-                        color="inherit"
-                        aria-label="open drawer"
-                        edge="start"
-                        onClick={handleDrawerToggle}
-                        className={classes.menuButton}
-                    >
-                        <MenuIcon />
-                    </IconButton>
-                </Toolbar>
-            </AppBar>
-            <nav className={classes.drawer}>
-                <Hidden smUp implementation="css">
-                    <Drawer
-                        container={container}
-                        variant="temporary"
-                        anchor={theme.direction === "rtl" ? "right" : "left"}
-                        open={mobileOpen}
-                        onClose={handleDrawerToggle}
-                        classes={{
-                            paper: classes.drawerPaper,
-                        }}
-                        ModalProps={{
-                            keepMounted: true,
-                        }}
-                    >
-                        {drawer()}
-                    </Drawer>
-                </Hidden>
-                <Hidden xsDown implementation="css">
-                    <Drawer
-                        classes={{
-                            paper: classes.drawerPaper,
-                        }}
-                        variant="permanent"
-                        open
-                    >
-                        {drawer()}
-                        <AddButton onClick={handleClickCreateButton} />
-                    </Drawer>
-                </Hidden>
-            </nav>
-            <main className={classes.content}>
-                <div className={classes.toolbar} />
-            </main>
-        </div>
+        <>
+            {isLoading && <Spinner />}
+            <div className={classes.root}>
+                {selectedChildFile && (
+                    <SelectChildFile fileInfo={childInfo} onClose={handleCloseSelectedModal} />
+                )}
+                <CssBaseline />
+                <AppBar className={classes.appBar} style={{ display: "flex" }}>
+                    <Toolbar>
+                        <IconButton
+                            color="inherit"
+                            aria-label="open drawer"
+                            edge="start"
+                            onClick={handleDrawerToggle}
+                            className={classes.menuButton}
+                        >
+                            <MenuIcon />
+                        </IconButton>
+                    </Toolbar>
+                </AppBar>
+                <nav className={classes.drawer}>
+                    <Hidden smUp implementation="css">
+                        <Drawer
+                            container={container}
+                            variant="temporary"
+                            anchor={theme.direction === "rtl" ? "right" : "left"}
+                            open={mobileOpen}
+                            onClose={handleDrawerToggle}
+                            classes={{
+                                paper: classes.drawerPaper,
+                            }}
+                            ModalProps={{
+                                keepMounted: true,
+                            }}
+                        >
+                            {drawer()}
+                        </Drawer>
+                    </Hidden>
+                    <Hidden xsDown implementation="css">
+                        <Drawer
+                            classes={{
+                                paper: classes.drawerPaper,
+                            }}
+                            variant="permanent"
+                            open
+                        >
+                            {drawer()}
+                            <AddButton onClick={handleClickCreateButton} />
+                        </Drawer>
+                    </Hidden>
+                </nav>
+                <main className={classes.content}>
+                    <div className={classes.toolbar} />
+                </main>
+            </div>
+        </>
     );
 };
 

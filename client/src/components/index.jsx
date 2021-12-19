@@ -15,3 +15,4 @@ export { default as AddChildIcon } from "./AddChildIcon";
 export { default as AddFile } from "./AddFile";
 export { default as FileInfo } from "./FileInfo";
 export { default as SelectChildFile } from "./SelectChildFile";
+export { default as Spinner } from "./Spinner";
