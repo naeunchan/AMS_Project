@@ -40,7 +40,7 @@ const MuiMenu = () => {
     const handleClickLogoutButton = (e) => {
         if (e.key !== "Enter") {
             setOpen(false);
-            sessionStorage.removeItem("PID");
+            sessionStorage.clear();
 
             Swal.fire({
                 icon: "success",

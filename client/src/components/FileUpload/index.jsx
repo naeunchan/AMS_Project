@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@components";
+import DotLoader from "react-spinners/DotLoader";
 import { useDropzone } from "react-dropzone";
 import styled from "@emotion/styled";
 import styles from "@style";
@@ -28,6 +29,22 @@ const ButtonContainer = styled.div`
     justify-content: space-around;
 `;
 
+const BackgroundDim = styled.div`
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    box-sizing: border-box;
+    z-index: 1060;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+`;
+
+const Container = styled.div``;
+
 const FileUpload = ({ fileInfo, onClose, ...props }) => {
     const { getRootProps, getInputProps, acceptedFiles } = useDropzone({
         noKeyboard: true,
@@ -37,6 +54,7 @@ const FileUpload = ({ fileInfo, onClose, ...props }) => {
         maxFiles: 1,
         maxSize: 1000 * 1024 * 1024,
     });
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleClickConfirmButton = (event) => {
         event.preventDefault();
@@ -65,6 +83,7 @@ const FileUpload = ({ fileInfo, onClose, ...props }) => {
             });
         } else {
             formData.append("file", acceptedFiles[0]);
+            setIsLoading(true);
 
             axios
                 .post("/api/upload", formData, {
@@ -78,6 +97,7 @@ const FileUpload = ({ fileInfo, onClose, ...props }) => {
                 })
                 .then((res) => {
                     if (res.data) {
+                        setIsLoading(false);
                         try {
                             Swal.fire({
                                 icon: "success",
@@ -120,6 +140,11 @@ const FileUpload = ({ fileInfo, onClose, ...props }) => {
 
     return (
         <>
+            {isLoading && (
+                <BackgroundDim>
+                    <DotLoader size={150} />
+                </BackgroundDim>
+            )}
             <TextField
                 id="outlined-multiline-static"
                 label="첨부파일"
